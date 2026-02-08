@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista firm</title>
+    <link rel="stylesheet" href="{% static 'firmy_django/style.css' %}">
+</head>
+<body>
+<h1>Lista firm</h1>
+
+<p>Przeskanowano plików XML: {{ scanned }}</p>
+<p>Firm spełniających próg {{ min_thr }}: {{ matched }}</p>
+
+<table border="1">
+    <tr>
+        <th>Nazwa</th>
+        <th>NIP</th>
+        <th>Kwota</th>
+        <th>Plik</th>
+    </tr>
+    {% for firma in sqlite_rows %}
+    <tr>
+        <td>{{ firma.nazwa }}</td>
+        <td>{{ firma.nip }}</td>
+        <td>{{ firma.kwota }}</td>
+        <td>{{ firma.plik }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<p><a href="{% url 'download_csv' %}">Pobierz CSV</a></p>
+
+</body>
+</html>
