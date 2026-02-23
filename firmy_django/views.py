@@ -153,7 +153,7 @@ def index(request):
                 continue
             debug_infos.append(parse_one_file(os.path.join(XML_DIR, fname)))
 
-    sqlite_rows = Firma.objects.order_by('-kwota')[:20]
+    postgres_rows = Firma.objects.order_by('-kwota')[:20]
 
     return render(request, "firmy_django/index.html", {
         "firmy": results,
@@ -163,7 +163,7 @@ def index(request):
         "csv_name": CSV_NAME,
         "debug_mode": debug_mode,
         "debug_infos": debug_infos,
-        "sqlite_rows": sqlite_rows
+        "postgres_rows": postgres_rows
     })
 
 def download_csv(request):

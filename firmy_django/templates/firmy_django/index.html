@@ -3,33 +3,70 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Lista firm</title>
+    <title>Raport należności firm</title>
     <link rel="stylesheet" href="{% static 'firmy_django/style.css' %}">
 </head>
 <body>
-<h1>Lista firm</h1>
 
-<p>Przeskanowano plików XML: {{ scanned }}</p>
-<p>Firm spełniających próg {{ min_thr }}: {{ matched }}</p>
+<h1>Raport należności firm</h1>
 
-<table border="1">
+<!-- FORMULARZ -->
+<form method="get">
+    <label for="min">Minimalna kwota:</label>
+    <input type="number"
+           id="min"
+           name="min"
+           step="0.01"
+           value="{{ min_thr }}">
+
+    <label>
+        <input type="checkbox"
+               name="debug"
+               value="1"
+               {% if debug_mode %}checked{% endif %}>
+        Debug
+    </label>
+
+    <button type="submit">Filtruj</button>
+</form>
+
+<br>
+
+<p>
+    Przeskanowano plików: <strong>{{ scanned }}</strong>
+    |
+    Dopasowano: <strong>{{ matched }}</strong>
+    |
+    <a href="{% url 'download_csv' %}?min={{ min_thr }}">
+        Pobierz CSV
+    </a>
+</p>
+
+<br>
+
+<h3>Top 20 rekordów (PostgreSQL)</h3>
+
+<table border="1" cellpadding="5">
     <tr>
         <th>Nazwa</th>
         <th>NIP</th>
         <th>Kwota</th>
         <th>Plik</th>
     </tr>
-    {% for firma in sqlite_rows %}
+
+    {% for firma in postgres_rows %}
     <tr>
         <td>{{ firma.nazwa }}</td>
         <td>{{ firma.nip }}</td>
         <td>{{ firma.kwota }}</td>
         <td>{{ firma.plik }}</td>
     </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4">Brak wyników dla podanego progu.</td>
+    </tr>
     {% endfor %}
 </table>
-
-<p><a href="{% url 'download_csv' %}">Pobierz CSV</a></p>
 
 </body>
 </html>
