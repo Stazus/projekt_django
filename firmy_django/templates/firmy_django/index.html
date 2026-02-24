@@ -1,72 +1,90 @@
-{% load static %}
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Raport należności firm</title>
-    <link rel="stylesheet" href="{% static 'firmy_django/style.css' %}">
+    <title>Raport firm z plików XML</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
+        table { border-collapse: collapse; width: 100%; background: #fff; margin-top: 15px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #eee; }
+        tr:nth-child(even) { background: #f4f4f4; }
+        .stats { margin-bottom: 15px; }
+        .csv-link { margin-left: 10px; }
+        .filter-form { margin-bottom: 15px; }
+        input[type="text"] { padding: 5px; width: 120px; }
+        input[type="submit"] { padding: 5px 10px; }
+        .debug { font-size: 0.9em; color: #555; margin-top: 10px; background: #f0f0f0; padding: 10px; border-radius: 5px; }
+        .top20-title { margin-top: 30px; font-weight: bold; }
+    </style>
 </head>
 <body>
+    <h1>Raport firm z plików XML</h1>
 
-<h1>Raport należności firm</h1>
+    <!-- Formularz filtrujący po minimalnej kwocie -->
+    <div class="filter-form">
+        <form method="get" action="">
+            <label for="min">Minimalna kwota:</label>
+            <input type="text" name="min" id="min" value="{{ min_thr }}">
+            <input type="submit" value="Filtruj">
+            {% if debug_mode %}
+                <input type="hidden" name="debug" value="1">
+            {% endif %}
+        </form>
+    </div>
 
-<!-- FORMULARZ -->
-<form method="get">
-    <label for="min">Minimalna kwota:</label>
-    <input type="number"
-           id="min"
-           name="min"
-           step="0.01"
-           value="{{ min_thr }}">
+    <!-- Statystyki -->
+    <div class="stats">
+        Przeskanowano plików: {{ scanned }} | Dopasowano: {{ matched }}
+        <a href="{% url 'download_csv' %}" class="csv-link">Pobierz CSV</a>
+    </div>
 
-    <label>
-        <input type="checkbox"
-               name="debug"
-               value="1"
-               {% if debug_mode %}checked{% endif %}>
-        Debug
-    </label>
+    <!-- Tabela Top 20 rekordów (PostgreSQL) -->
+    <div class="top20-title">Top 20 rekordów (PostgreSQL)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Nazwa firmy</th>
+                <th>NIP</th>
+                <th>Kwota (Aktywa_B_II_3/KwotaA)</th>
+                <th>Plik</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in firmy|slice:":20" %}
+            <tr>
+                <td>{{ f.nazwa }}</td>
+                <td>{{ f.nip }}</td>
+                <td>{{ f.kwota|format_pln }}</td>
+                <td>{{ f.plik }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">Brak firm do wyświetlenia.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-    <button type="submit">Filtruj</button>
-</form>
-
-<br>
-
-<p>
-    Przeskanowano plików: <strong>{{ scanned }}</strong>
-    |
-    Dopasowano: <strong>{{ matched }}</strong>
-    |
-    <a href="{% url 'download_csv' %}?min={{ min_thr }}">
-        Pobierz CSV
-    </a>
-</p>
-
-<br>
-
-<h3>Top 20 rekordów (PostgreSQL)</h3>
-
-<table border="1" cellpadding="5">
-    <tr>
-        <th>Nazwa</th>
-        <th>NIP</th>
-        <th>Kwota</th>
-        <th>Plik</th>
-    </tr>
-
-    {% for firma in postgres_rows %}
-    <tr>
-        <td>{{ firma.nazwa }}</td>
-        <td>{{ firma.nip }}</td>
-        <td>{{ firma.kwota }}</td>
-        <td>{{ firma.plik }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="4">Brak wyników dla podanego progu.</td>
-    </tr>
+    <!-- Debug info (opcjonalnie) -->
+    {% if debug_mode %}
+    <h2>Debug info:</h2>
+    {% for d in debug_infos %}
+        <div class="debug">
+            <strong>Plik:</strong> {{ d.plik }}<br>
+            <strong>Nazwa:</strong> {{ d.nazwa }}<br>
+            <strong>NIP:</strong> {{ d.nip }}<br>
+            <strong>Kwota:</strong> {{ d.kwota|format_pln }}<br>
+            <strong>Debug notes:</strong>
+            <ul>
+                {% for note in d.debug %}
+                <li>{{ note }}</li>
+                {% endfor %}
+            </ul>
+        </div>
     {% endfor %}
-</table>
+    {% endif %}
 
 </body>
 </html>

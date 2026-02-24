@@ -13,6 +13,7 @@ DEFAULT_THRESHOLD = 100_000       # próg kwoty
 # Funkcje pomocnicze
 # -----------------------------
 def clean_amount_to_float(text):
+    """Konwertuje tekstową kwotę na float"""
     if not text:
         return 0.0
     s = str(text).strip().replace("\xa0", "").replace(" ", "")
@@ -26,6 +27,7 @@ def clean_amount_to_float(text):
         return 0.0
 
 def localname(elem):
+    """Zwraca lokalną nazwę elementu XML (bez namespace)"""
     tag = elem.tag
     if isinstance(tag, str) and "}" in tag:
         return tag.split("}", 1)[1]
@@ -53,6 +55,7 @@ def find_kwotaA_in_Aktywa_B_II_3(root):
     else:
         debug_notes.append("No Aktywa_B_II_3 elements found.")
 
+    # fallback: szukamy innych elementów KwotaA
     parent_map = {c: p for p in root.iter() for c in p}
     kwota_candidates = []
     for e in root.iter():
@@ -119,26 +122,42 @@ def scan_folder(threshold):
     return results, scanned
 
 def save_csv(rows, csv_path=CSV_NAME):
+    """Zapis CSV w UTF-8 z BOM (poprawne polskie znaki w Excelu)"""
     headers = ["Nazwa firmy","NIP","Kwota (Aktywa_B_II_3/KwotaA)","Plik"]
-    with open(csv_path, "w", newline="", encoding="utf-8") as f:
+    with open(csv_path, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.DictWriter(f, fieldnames=headers, delimiter=";")
         w.writeheader()
         for r in rows:
             kw = "{:,.2f}".format(r["kwota"]).replace(",", " ").replace(".", ",")
-            w.writerow({"Nazwa firmy": r["nazwa"], "NIP": r["nip"], "Kwota (Aktywa_B_II_3/KwotaA)": kw, "Plik": r["plik"]})
+            w.writerow({
+                "Nazwa firmy": r["nazwa"],
+                "NIP": r["nip"],
+                "Kwota (Aktywa_B_II_3/KwotaA)": kw,
+                "Plik": r["plik"]
+            })
+
+def format_kwota_pln(value):
+    try:
+        return "{:,.2f}".format(float(value)).replace(",", " ").replace(".", ",")
+    except:
+        return "0,00"
 
 # -----------------------------
 # Widoki Django
 # -----------------------------
 def index(request):
     try:
-        thr = float(request.GET.get("min", DEFAULT_THRESHOLD))
+        thr_input = request.GET.get("min", str(DEFAULT_THRESHOLD))
+        thr = float(thr_input.replace(" ", "").replace(",", "."))
     except:
         thr = DEFAULT_THRESHOLD
 
     debug_mode = request.GET.get("debug", "0") in ("1","true","yes")
 
+    # skanowanie folderu XML
     results, scanned = scan_folder(thr)
+
+    # zapis CSV
     save_csv(results)
 
     # zapis do bazy Django
@@ -146,6 +165,7 @@ def index(request):
     for r in results:
         Firma.objects.create(nazwa=r["nazwa"], nip=r["nip"], kwota=r["kwota"], plik=r["plik"])
 
+    # debug info
     debug_infos = []
     if debug_mode:
         for fname in sorted(os.listdir(XML_DIR)):
@@ -153,20 +173,26 @@ def index(request):
                 continue
             debug_infos.append(parse_one_file(os.path.join(XML_DIR, fname)))
 
-    postgres_rows = Firma.objects.order_by('-kwota')[:20]
+    # sortowanie po kwocie malejąco
+    results_sorted = sorted(results, key=lambda x: x["kwota"], reverse=True)
+
+    # top 20 rekordów
+    top_20 = results_sorted[:20]
 
     return render(request, "firmy_django/index.html", {
-        "firmy": results,
+        "firmy": results_sorted,
+        "top_20": top_20,
         "scanned": scanned,
         "matched": len(results),
         "min_thr": int(thr),
         "csv_name": CSV_NAME,
         "debug_mode": debug_mode,
         "debug_infos": debug_infos,
-        "postgres_rows": postgres_rows
+        "format_kwota": format_kwota_pln,
     })
 
 def download_csv(request):
+    """Pobranie pliku CSV"""
     if os.path.exists(CSV_NAME):
         return FileResponse(open(CSV_NAME,'rb'), as_attachment=True, filename=CSV_NAME)
     raise Http404("Plik CSV nie istnieje")
