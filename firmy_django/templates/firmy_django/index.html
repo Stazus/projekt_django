@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Lista firm</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,7 +12,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: auto;
             background: white;
             padding: 25px;
@@ -51,65 +52,107 @@
         .muted {
             color: #666;
         }
+
+        form {
+            margin-top: 20px;
+        }
+
+        input,
+        select,
+        button {
+            padding: 8px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Lista firm</h1>
-        <p class="muted">
-            Aplikacja do analizy firm i sprawozdań finansowych.
-        </p>
 
-        <form method="get" style="margin-top: 20px;">
-            <input
-                type="text"
-                name="q"
-                value="{{ query }}"
-                placeholder="Szukaj po nazwie lub NIP"
-                style="padding: 8px; width: 300px;"
-            >
-            <button type="submit" style="padding: 8px 12px;">
-                Szukaj
-            </button>
+<div class="container">
 
-            {% if query %}
-                <a href="{% url 'home' %}" style="margin-left: 10px;">
-                    Wyczyść
-                </a>
-            {% endif %}
-        </form>
+    <h1>Lista firm</h1>
 
+    <p class="muted">
+        Aplikacja do analizy firm i sprawozdań finansowych.
+    </p>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Nazwa</th>
-                    <th>NIP</th>
-                    <th>REGON</th>
-                    <th>Miasto</th>
-                    <th>Liczba sprawozdań</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for firma in firmy %}
-                    <tr>
-                        <td>
-                            <a href="{% url 'szczegoly_firmy' firma.id %}">
-                                {{ firma.nazwa }}
-                            </a>
-                        </td>
-                        <td>{{ firma.nip|default:"-" }}</td>
-                        <td>{{ firma.regon|default:"-" }}</td>
-                        <td>{{ firma.miasto|default:"-" }}</td>
-                        <td>{{ firma.sprawozdania.count }}</td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="5">Brak firm w bazie.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <form method="get">
+
+        <input
+            type="text"
+            name="q"
+            value="{{ query }}"
+            placeholder="Szukaj po nazwie lub NIP"
+            style="width:300px;"
+        >
+
+        <select name="sort">
+            <option value="name_asc"
+                {% if sort == "name_asc" %}selected{% endif %}>
+                Nazwa A-Z
+            </option>
+
+            <option value="name_desc"
+                {% if sort == "name_desc" %}selected{% endif %}>
+                Nazwa Z-A
+            </option>
+
+            <option value="reports_desc"
+                {% if sort == "reports_desc" %}selected{% endif %}>
+                Najwięcej sprawozdań
+            </option>
+        </select>
+
+        <button type="submit">
+            Szukaj
+        </button>
+
+        {% if query %}
+            <a href="{% url 'home' %}">
+                Wyczyść
+            </a>
+        {% endif %}
+
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nazwa</th>
+                <th>NIP</th>
+                <th>REGON</th>
+                <th>Miasto</th>
+                <th>Liczba sprawozdań</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for firma in firmy %}
+            <tr>
+
+                <td>
+                    <a href="{% url 'szczegoly_firmy' firma.id %}">
+                        {{ firma.nazwa }}
+                    </a>
+                </td>
+
+                <td>{{ firma.nip|default:"-" }}</td>
+                <td>{{ firma.regon|default:"-" }}</td>
+                <td>{{ firma.miasto|default:"-" }}</td>
+                <td>{{ firma.sprawozdania.count }}</td>
+
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">
+                    Brak firm w bazie.
+                </td>
+            </tr>
+            {% endfor %}
+
+        </tbody>
+    </table>
+
+</div>
+
 </body>
 </html>

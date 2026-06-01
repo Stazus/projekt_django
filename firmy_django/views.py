@@ -5,6 +5,7 @@ from .models import Firma
 
 def index(request):
     query = request.GET.get("q", "")
+    sort = request.GET.get("sort", "name_asc")
 
     firmy = Firma.objects.prefetch_related("sprawozdania").all()
 
@@ -15,11 +16,21 @@ def index(request):
             nip__icontains=query
         )
 
-    firmy = firmy.order_by("nazwa")
+    if sort == "name_desc":
+        firmy = firmy.order_by("-nazwa")
+    elif sort == "reports_desc":
+        firmy = sorted(
+            firmy,
+            key=lambda f: f.sprawozdania.count(),
+            reverse=True
+        )
+    else:
+        firmy = firmy.order_by("nazwa")
 
     return render(request, "firmy_django/index.html", {
         "firmy": firmy,
         "query": query,
+        "sort": sort,
     })
 
 
