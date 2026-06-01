@@ -60,6 +60,26 @@
             Aplikacja do analizy firm i sprawozdań finansowych.
         </p>
 
+        <form method="get" style="margin-top: 20px;">
+            <input
+                type="text"
+                name="q"
+                value="{{ query }}"
+                placeholder="Szukaj po nazwie lub NIP"
+                style="padding: 8px; width: 300px;"
+            >
+            <button type="submit" style="padding: 8px 12px;">
+                Szukaj
+            </button>
+
+            {% if query %}
+                <a href="{% url 'home' %}" style="margin-left: 10px;">
+                    Wyczyść
+                </a>
+            {% endif %}
+        </form>
+
+
         <table>
             <thead>
                 <tr>

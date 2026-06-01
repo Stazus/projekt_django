@@ -4,10 +4,22 @@ from .models import Firma
 
 
 def index(request):
-    firmy = Firma.objects.prefetch_related("sprawozdania").all().order_by("nazwa")
+    query = request.GET.get("q", "")
+
+    firmy = Firma.objects.prefetch_related("sprawozdania").all()
+
+    if query:
+        firmy = firmy.filter(
+            nazwa__icontains=query
+        ) | firmy.filter(
+            nip__icontains=query
+        )
+
+    firmy = firmy.order_by("nazwa")
 
     return render(request, "firmy_django/index.html", {
         "firmy": firmy,
+        "query": query,
     })
 
 
