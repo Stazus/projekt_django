@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title>Lista firm</title>
 
-    {% load custom_filters %}
-
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,7 +12,7 @@
         }
 
         .container {
-            max-width: 1300px;
+            max-width: 1100px;
             margin: auto;
             background: white;
             padding: 25px;
@@ -63,11 +61,6 @@
         select,
         button {
             padding: 8px;
-        }
-
-        .kwota {
-            text-align: right;
-            white-space: nowrap;
         }
     </style>
 </head>
@@ -127,7 +120,6 @@
                 <th>NIP</th>
                 <th>REGON</th>
                 <th>Miasto</th>
-                <th>Należności</th>
                 <th>Liczba sprawozdań</th>
             </tr>
         </thead>
@@ -146,23 +138,12 @@
                 <td>{{ firma.nip|default:"-" }}</td>
                 <td>{{ firma.regon|default:"-" }}</td>
                 <td>{{ firma.miasto|default:"-" }}</td>
-
-                <td class="kwota">
-                    {% with sprawozdanie=firma.sprawozdania.first %}
-                        {% if sprawozdanie %}
-                            {{ sprawozdanie.naleznosci|format_pln }} zł
-                        {% else %}
-                            -
-                        {% endif %}
-                    {% endwith %}
-                </td>
-
                 <td>{{ firma.sprawozdania.count }}</td>
 
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6">
+                <td colspan="5">
                     Brak firm w bazie.
                 </td>
             </tr>
