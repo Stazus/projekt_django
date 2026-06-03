@@ -1,5 +1,6 @@
 from decimal import Decimal, InvalidOperation
 
+from django.db.models import Max
 from django.shortcuts import render, get_object_or_404
 
 from .models import Firma
@@ -26,6 +27,8 @@ def index(request):
         except InvalidOperation:
             min_naleznosci = ""
 
+    firmy = firmy.annotate(max_naleznosci=Max("sprawozdania__naleznosci"))
+
     if sort == "name_desc":
         firmy = firmy.order_by("-nazwa")
     elif sort == "reports_desc":
@@ -34,6 +37,10 @@ def index(request):
             key=lambda f: f.sprawozdania.count(),
             reverse=True
         )
+    elif sort == "naleznosci_desc":
+        firmy = firmy.order_by("-max_naleznosci", "nazwa")
+    elif sort == "naleznosci_asc":
+        firmy = firmy.order_by("max_naleznosci", "nazwa")
     else:
         firmy = firmy.order_by("nazwa")
 

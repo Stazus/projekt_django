@@ -121,6 +121,17 @@
                 {% if sort == "reports_desc" %}selected{% endif %}>
                 Najwięcej sprawozdań
             </option>
+
+            <option value="naleznosci_desc"
+                {% if sort == "naleznosci_desc" %}selected{% endif %}>
+                Największe należności
+            </option>
+
+            <option value="naleznosci_asc"
+                {% if sort == "naleznosci_asc" %}selected{% endif %}>
+                Najmniejsze należności
+            </option>
+
         </select>
 
         <button type="submit">
