@@ -1,3 +1,5 @@
+from decimal import Decimal, InvalidOperation
+
 from django.shortcuts import render, get_object_or_404
 
 from .models import Firma
@@ -6,6 +8,7 @@ from .models import Firma
 def index(request):
     query = request.GET.get("q", "")
     sort = request.GET.get("sort", "name_asc")
+    min_naleznosci = request.GET.get("min_naleznosci", "")
 
     firmy = Firma.objects.prefetch_related("sprawozdania").all()
 
@@ -15,6 +18,13 @@ def index(request):
         ) | firmy.filter(
             nip__icontains=query
         )
+
+    if min_naleznosci:
+        try:
+            min_value = Decimal(min_naleznosci.replace(" ", "").replace(",", "."))
+            firmy = firmy.filter(sprawozdania__naleznosci__gte=min_value).distinct()
+        except InvalidOperation:
+            min_naleznosci = ""
 
     if sort == "name_desc":
         firmy = firmy.order_by("-nazwa")
@@ -31,6 +41,7 @@ def index(request):
         "firmy": firmy,
         "query": query,
         "sort": sort,
+        "min_naleznosci": min_naleznosci,
     })
 
 

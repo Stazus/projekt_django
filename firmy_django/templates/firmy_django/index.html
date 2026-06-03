@@ -69,6 +69,13 @@
             text-align: right;
             white-space: nowrap;
         }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -81,7 +88,7 @@
         Aplikacja do analizy firm i sprawozdań finansowych.
     </p>
 
-    <form method="get">
+    <form method="get" class="filters">
 
         <input
             type="text"
@@ -89,6 +96,14 @@
             value="{{ query }}"
             placeholder="Szukaj po nazwie lub NIP"
             style="width:300px;"
+        >
+
+        <input
+            type="text"
+            name="min_naleznosci"
+            value="{{ min_naleznosci }}"
+            placeholder="Minimalne należności, np. 1000000"
+            style="width:260px;"
         >
 
         <select name="sort">
@@ -109,10 +124,10 @@
         </select>
 
         <button type="submit">
-            Szukaj
+            Filtruj
         </button>
 
-        {% if query %}
+        {% if query or min_naleznosci %}
             <a href="{% url 'home' %}">
                 Wyczyść
             </a>
@@ -163,7 +178,7 @@
             {% empty %}
             <tr>
                 <td colspan="6">
-                    Brak firm w bazie.
+                    Brak firm spełniających podane kryteria.
                 </td>
             </tr>
             {% endfor %}
