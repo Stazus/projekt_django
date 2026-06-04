@@ -61,3 +61,15 @@ def szczegoly_firmy(request, firma_id):
     return render(request, "firmy_django/szczegoly_firmy.html", {
         "firma": firma,
     })
+def przygotuj_mailing(request):
+    wybrane_firmy_ids = request.POST.getlist("firmy")
+
+    firmy = Firma.objects.filter(
+        id__in=wybrane_firmy_ids,
+        email__isnull=False
+    ).exclude(email="")
+
+    return render(request, "firmy_django/przygotuj_mailing.html", {
+        "firmy": firmy,
+        "liczba_firm": firmy.count(),
+    })

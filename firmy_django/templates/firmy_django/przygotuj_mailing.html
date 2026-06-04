@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Przygotuj mailing</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f7f7f7;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+        }
+
+        a {
+            color: #1565c0;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        button {
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+
+        textarea {
+            min-height: 160px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 15px;
+            margin-bottom: 25px;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #eee;
+        }
+
+        .muted {
+            color: #666;
+        }
+
+        .summary {
+            background: #f1f8e9;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <p>
+        <a href="{% url 'home' %}">← Wróć do listy firm</a>
+    </p>
+
+    <h1>Przygotuj mailing</h1>
+
+    <div class="summary">
+        Wybrano firm z bazy: <strong>{{ liczba_firm }}</strong>
+    </div>
+
+    <h2>Odbiorcy z bazy</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Firma</th>
+                <th>NIP</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for firma in firmy %}
+                <tr>
+                    <td>{{ firma.nazwa }}</td>
+                    <td>{{ firma.nip|default:"-" }}</td>
+                    <td>{{ firma.email }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">
+                        Nie wybrano żadnych firm z poprawnym adresem email.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Dodatkowi odbiorcy spoza systemu</h2>
+
+    <p class="muted">
+        Możesz wkleić wiele adresów naraz — każdy w osobnej linii albo oddzielone przecinkami lub średnikami.
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <label for="dodatkowi_odbiorcy">
+            Dodatkowi odbiorcy:
+        </label>
+        <textarea
+            id="dodatkowi_odbiorcy"
+            name="dodatkowi_odbiorcy"
+            placeholder="np. firma1@example.com&#10;firma2@example.com&#10;firma3@example.com"
+        ></textarea>
+
+        <label for="temat">
+            Temat wiadomości:
+        </label>
+        <input
+            type="text"
+            id="temat"
+            name="temat"
+            placeholder="np. Propozycja współpracy"
+        >
+
+        <label for="tresc">
+            Treść wiadomości:
+        </label>
+        <textarea
+            id="tresc"
+            name="tresc"
+            placeholder="Wpisz treść wiadomości..."
+        ></textarea>
+
+        <button type="submit">
+            Dalej - podsumowanie mailingu
+        </button>
+    </form>
+
+</div>
+
+</body>
+</html>

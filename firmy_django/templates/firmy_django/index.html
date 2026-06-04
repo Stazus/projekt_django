@@ -14,7 +14,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1500px;
             margin: auto;
             background: white;
             padding: 25px;
@@ -77,8 +77,22 @@
             align-items: center;
         }
 
-        .email {
+        .email,
+        .zrodlo,
+        .status {
             white-space: nowrap;
+        }
+
+        .mailing-button {
+            margin-top: 20px;
+        }
+
+        .mailing-header {
+            white-space: nowrap;
+        }
+
+        .mailing-header input {
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -135,7 +149,6 @@
                 {% if sort == "naleznosci_asc" %}selected{% endif %}>
                 Najmniejsze należności
             </option>
-
         </select>
 
         <button type="submit">
@@ -150,96 +163,135 @@
 
     </form>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Nazwa</th>
-                <th>NIP</th>
-                <th>Email</th>
-                <th>Źródło</th>
-                <th>Status</th>
-                <th>REGON</th>
-                <th>Miasto</th>
-                <th>Należności</th>
-                <th>Liczba sprawozdań</th>
-            </tr>
-        </thead>
+    <form method="post" action="{% url 'przygotuj_mailing' %}">
+        {% csrf_token %}
 
-        <tbody>
+        <table>
+            <thead>
+                <tr>
+                    <th class="mailing-header">
+                        <input
+                            type="checkbox"
+                            id="zaznacz-wszystkie"
+                            checked
+                            onclick="przelaczWszystkieFirmy(this)"
+                        >
+                        Mailing
+                    </th>
+                    <th>Nazwa</th>
+                    <th>NIP</th>
+                    <th>Email</th>
+                    <th>Źródło</th>
+                    <th>Status</th>
+                    <th>REGON</th>
+                    <th>Miasto</th>
+                    <th>Należności</th>
+                    <th>Liczba sprawozdań</th>
+                </tr>
+            </thead>
 
-            {% for firma in firmy %}
-            <tr>
+            <tbody>
 
-                <td>
-                    <a href="{% url 'szczegoly_firmy' firma.id %}">
-                        {{ firma.nazwa }}
-                    </a>
-                </td>
+                {% for firma in firmy %}
+                <tr>
 
-                <td>{{ firma.nip|default:"-" }}</td>
-
-
-
-                <td>
-                    {% if firma.email %}
-                        <span title="Źródło: {{ firma.get_email_zrodlo_display }}{% if firma.email_zrodlo_opis %} | {{ firma.email_zrodlo_opis }}{% endif %}">
-                            {{ firma.email }}
-                        </span>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-
-                <td>
-                    {% if firma.email_zrodlo %}
-                        <span title="{{ firma.email_zrodlo_opis }}">
-                            {{ firma.get_email_zrodlo_display }}
-                        </span>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-
-                <td>
-                    {% if firma.email %}
-                        Gotowy
-                    {% else %}
-                        Brak emaila
-                    {% endif %}
-                </td>
-
-
-                <td>{{ firma.regon|default:"-" }}</td>
-
-
-
-                <td>{{ firma.miasto|default:"-" }}</td>
-
-                <td class="kwota">
-                    {% with sprawozdanie=firma.sprawozdania.first %}
-                        {% if sprawozdanie %}
-                            {{ sprawozdanie.naleznosci|format_pln }} zł
+                    <td>
+                        {% if firma.email %}
+                            <input
+                                type="checkbox"
+                                name="firmy"
+                                value="{{ firma.id }}"
+                                checked
+                            >
                         {% else %}
                             -
                         {% endif %}
-                    {% endwith %}
-                </td>
+                    </td>
 
-                <td>{{ firma.sprawozdania.count }}</td>
+                    <td>
+                        <a href="{% url 'szczegoly_firmy' firma.id %}">
+                            {{ firma.nazwa }}
+                        </a>
+                    </td>
 
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="9">
-                    Brak firm spełniających podane kryteria.
-                </td>
-            </tr>
-            {% endfor %}
+                    <td>{{ firma.nip|default:"-" }}</td>
 
-        </tbody>
-    </table>
+                    <td class="email">
+                        {% if firma.email %}
+                            <span title="Źródło: {{ firma.get_email_zrodlo_display }}{% if firma.email_zrodlo_opis %} | {{ firma.email_zrodlo_opis }}{% endif %}">
+                                <a href="mailto:{{ firma.email }}">
+                                    {{ firma.email }}
+                                </a>
+                            </span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td class="zrodlo">
+                        {% if firma.email_zrodlo %}
+                            <span title="{{ firma.email_zrodlo_opis }}">
+                                {{ firma.get_email_zrodlo_display }}
+                            </span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td class="status">
+                        {% if firma.email %}
+                            Gotowy
+                        {% else %}
+                            Brak emaila
+                        {% endif %}
+                    </td>
+
+                    <td>{{ firma.regon|default:"-" }}</td>
+                    <td>{{ firma.miasto|default:"-" }}</td>
+
+                    <td class="kwota">
+                        {% with sprawozdanie=firma.sprawozdania.first %}
+                            {% if sprawozdanie %}
+                                {{ sprawozdanie.naleznosci|format_pln }} zł
+                            {% else %}
+                                -
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+
+                    <td>{{ firma.sprawozdania.count }}</td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10">
+                        Brak firm spełniających podane kryteria.
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+
+        <p class="mailing-button">
+            <button type="submit">
+                Przygotuj mailing do zaznaczonych firm
+            </button>
+        </p>
+
+    </form>
 
 </div>
+
+<script>
+    function przelaczWszystkieFirmy(glownyCheckbox) {
+        const checkboxy = document.querySelectorAll('input[name="firmy"]');
+
+        checkboxy.forEach(function(checkbox) {
+            checkbox.checked = glownyCheckbox.checked;
+        });
+    }
+</script>
 
 </body>
 </html>
