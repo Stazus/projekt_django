@@ -101,3 +101,6 @@ STATICFILES_DIRS = [BASE_DIR / "static"]  # globalny folder na pliki statyczne
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Email - tryb testowy, wiadomości pojawią się w terminalu
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "test@localhost"

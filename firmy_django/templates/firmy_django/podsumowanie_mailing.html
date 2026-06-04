@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Przygotuj mailing</title>
+    <title>Podsumowanie mailingu</title>
 
     <style>
         body {
@@ -25,20 +25,6 @@
             font-weight: bold;
         }
 
-        input,
-        textarea,
-        button {
-            padding: 8px;
-            width: 100%;
-            box-sizing: border-box;
-            margin-top: 5px;
-            margin-bottom: 15px;
-        }
-
-        textarea {
-            min-height: 160px;
-        }
-
         table {
             border-collapse: collapse;
             width: 100%;
@@ -57,16 +43,32 @@
             background: #eee;
         }
 
-        .muted {
-            color: #666;
-        }
-
         .summary {
             background: #f1f8e9;
             padding: 12px;
             border-radius: 6px;
             margin-top: 15px;
             margin-bottom: 20px;
+        }
+
+        .message-box {
+            background: #f7f7f7;
+            padding: 15px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+        }
+
+        .success {
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #c8e6c9;
+        }
+
+        button {
+            padding: 10px;
+            margin-top: 15px;
         }
     </style>
 </head>
@@ -78,10 +80,18 @@
         <a href="{% url 'home' %}">← Wróć do listy firm</a>
     </p>
 
-    <h1>Przygotuj mailing</h1>
+    <h1>Podsumowanie mailingu</h1>
+
+    {% if komunikat %}
+        <div class="success">
+            {{ komunikat }}
+        </div>
+    {% endif %}
 
     <div class="summary">
-        Wybrano firm z bazy: <strong>{{ liczba_firm }}</strong>
+        <p>Firmy z bazy: <strong>{{ liczba_firm }}</strong></p>
+        <p>Dodatkowi odbiorcy: <strong>{{ liczba_dodatkowych }}</strong></p>
+        <p>Razem odbiorców: <strong>{{ liczba_wszystkich }}</strong></p>
     </div>
 
     <h2>Odbiorcy z bazy</h2>
@@ -103,57 +113,62 @@
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="3">
-                        Nie wybrano żadnych firm z poprawnym adresem email.
-                    </td>
+                    <td colspan="3">Brak odbiorców z bazy.</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <h2>Dodatkowi odbiorcy spoza systemu</h2>
+    <h2>Dodatkowi odbiorcy</h2>
 
-    <p class="muted">
-        Możesz wkleić wiele adresów naraz — każdy w osobnej linii albo oddzielone przecinkami lub średnikami.
-    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for email in dodatkowi_odbiorcy %}
+                <tr>
+                    <td>{{ email }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td>Brak dodatkowych odbiorców.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-    <form method="post">
+    <h2>Temat wiadomości</h2>
+
+    <div class="message-box">
+        {{ temat }}
+    </div>
+
+    <h2>Treść wiadomości</h2>
+
+    <div class="message-box">
+        {{ tresc }}
+    </div>
+
+    <form method="post" action="{% url 'przygotuj_mailing' %}">
         {% csrf_token %}
 
         {% for firma in firmy %}
             <input type="hidden" name="firmy_ids" value="{{ firma.id }}">
         {% endfor %}
 
-        <label for="dodatkowi_odbiorcy">
-            Dodatkowi odbiorcy:
-        </label>
-        <textarea
-            id="dodatkowi_odbiorcy"
-            name="dodatkowi_odbiorcy"
-            placeholder="np. firma1@example.com&#10;firma2@example.com&#10;firma3@example.com"
-        ></textarea>
+        {% for email in dodatkowi_odbiorcy %}
+            <input type="hidden" name="dodatkowi_odbiorcy" value="{{ email }}">
+        {% endfor %}
 
-        <label for="temat">
-            Temat wiadomości:
-        </label>
-        <input
-            type="text"
-            id="temat"
-            name="temat"
-            placeholder="np. Propozycja współpracy"
-        >
-
-        <label for="tresc">
-            Treść wiadomości:
-        </label>
-        <textarea
-            id="tresc"
-            name="tresc"
-            placeholder="Wpisz treść wiadomości..."
-        ></textarea>
+        <input type="hidden" name="temat" value="{{ temat }}">
+        <input type="hidden" name="tresc" value="{{ tresc }}">
+        <input type="hidden" name="akcja" value="wyslij_test">
 
         <button type="submit">
-            Dalej - podsumowanie mailingu
+            Wyślij test do odbiorców
         </button>
     </form>
 
