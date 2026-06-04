@@ -1,11 +1,30 @@
 from django.db import models
 
 
+EMAIL_ZRODLO_CHOICES = [
+    ("", "Brak"),
+    ("recznie", "Ręcznie"),
+    ("xml", "XML"),
+    ("strona_www", "Strona internetowa"),
+    ("ceidg", "CEIDG / biznes.gov.pl"),
+    ("gus_regon", "GUS REGON"),
+    ("krs", "KRS"),
+    ("inne", "Inne"),
+]
+
+
 class Firma(models.Model):
     nazwa = models.CharField(max_length=255)
     nip = models.CharField(max_length=20, blank=True)
     regon = models.CharField(max_length=20, blank=True)
     miasto = models.CharField(max_length=100, blank=True)
+    email = models.EmailField(blank=True)
+    email_zrodlo = models.CharField(
+        max_length=50,
+        choices=EMAIL_ZRODLO_CHOICES,
+        blank=True,
+    )
+    email_zrodlo_opis = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.nazwa

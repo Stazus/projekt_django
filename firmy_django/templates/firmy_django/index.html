@@ -14,7 +14,7 @@
         }
 
         .container {
-            max-width: 1300px;
+            max-width: 1400px;
             margin: auto;
             background: white;
             padding: 25px;
@@ -75,6 +75,10 @@
             gap: 10px;
             flex-wrap: wrap;
             align-items: center;
+        }
+
+        .email {
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -151,6 +155,9 @@
             <tr>
                 <th>Nazwa</th>
                 <th>NIP</th>
+                <th>Email</th>
+                <th>Źródło</th>
+                <th>Status</th>
                 <th>REGON</th>
                 <th>Miasto</th>
                 <th>Należności</th>
@@ -170,7 +177,42 @@
                 </td>
 
                 <td>{{ firma.nip|default:"-" }}</td>
+
+
+
+                <td>
+                    {% if firma.email %}
+                        <span title="Źródło: {{ firma.get_email_zrodlo_display }}{% if firma.email_zrodlo_opis %} | {{ firma.email_zrodlo_opis }}{% endif %}">
+                            {{ firma.email }}
+                        </span>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if firma.email_zrodlo %}
+                        <span title="{{ firma.email_zrodlo_opis }}">
+                            {{ firma.get_email_zrodlo_display }}
+                        </span>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if firma.email %}
+                        Gotowy
+                    {% else %}
+                        Brak emaila
+                    {% endif %}
+                </td>
+
+
                 <td>{{ firma.regon|default:"-" }}</td>
+
+
+
                 <td>{{ firma.miasto|default:"-" }}</td>
 
                 <td class="kwota">
@@ -188,7 +230,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6">
+                <td colspan="9">
                     Brak firm spełniających podane kryteria.
                 </td>
             </tr>

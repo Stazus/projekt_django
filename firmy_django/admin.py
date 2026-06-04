@@ -10,8 +10,24 @@ class SprawozdanieFinansoweInline(admin.TabularInline):
 
 @admin.register(Firma)
 class FirmaAdmin(admin.ModelAdmin):
-    list_display = ("nazwa", "nip", "regon", "miasto")
-    search_fields = ("nazwa", "nip", "regon")
+    list_display = (
+        "nazwa",
+        "nip",
+        "email",
+        "email_zrodlo",
+        "email_zrodlo_opis",
+        "regon",
+        "miasto",
+    )
+
+    search_fields = (
+        "nazwa",
+        "nip",
+        "email",
+        "email_zrodlo_opis",
+        "regon",
+    )
+
     list_filter = ("miasto",)
     inlines = [SprawozdanieFinansoweInline]
 
