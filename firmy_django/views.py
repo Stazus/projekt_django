@@ -148,3 +148,9 @@ def przygotuj_mailing(request):
         "firmy": firmy,
         "liczba_firm": firmy.count(),
     })
+def historia_mailingow(request):
+    mailingi = Mailing.objects.all().order_by("-data_wyslania")
+
+    return render(request, "firmy_django/historia_mailingow.html", {
+        "mailingi": mailingi,
+    })

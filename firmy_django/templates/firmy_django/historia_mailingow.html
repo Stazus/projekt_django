@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Historia mailingów</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f7f7f7;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+        }
+
+        a {
+            color: #1565c0;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #eee;
+        }
+
+        .message {
+            white-space: pre-wrap;
+            background: #f7f7f7;
+            padding: 10px;
+            border-radius: 6px;
+            max-height: 120px;
+            overflow: auto;
+        }
+
+        .muted {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <p>
+        <a href="{% url 'home' %}">← Wróć do listy firm</a>
+    </p>
+
+    <h1>Historia mailingów</h1>
+
+    <p class="muted">
+        Lista wysłanych mailingów zapisanych w systemie.
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Data wysłania</th>
+                <th>Temat</th>
+                <th>Liczba odbiorców</th>
+                <th>Treść</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for mailing in mailingi %}
+                <tr>
+                    <td>{{ mailing.data_wyslania|date:"Y-m-d H:i" }}</td>
+                    <td>{{ mailing.temat }}</td>
+                    <td>{{ mailing.liczba_odbiorcow }}</td>
+                    <td>
+                        <div class="message">
+                            {{ mailing.tresc }}
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4">
+                        Brak zapisanych mailingów.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>
