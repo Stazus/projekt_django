@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from .models import Firma, SprawozdanieFinansowe
-
+from .models import Firma, SprawozdanieFinansowe, Mailing
 
 class SprawozdanieFinansoweInline(admin.TabularInline):
     model = SprawozdanieFinansowe
@@ -37,3 +36,13 @@ class SprawozdanieFinansoweAdmin(admin.ModelAdmin):
     list_display = ("firma", "rok", "naleznosci", "aktywa", "przychody", "zysk_netto")
     search_fields = ("firma__nazwa", "firma__nip", "firma__regon")
     list_filter = ("rok",)
+@admin.register(Mailing)
+class MailingAdmin(admin.ModelAdmin):
+    list_display = (
+        "temat",
+        "liczba_odbiorcow",
+        "data_wyslania",
+    )
+
+    search_fields = ("temat", "tresc")
+    list_filter = ("data_wyslania",)
