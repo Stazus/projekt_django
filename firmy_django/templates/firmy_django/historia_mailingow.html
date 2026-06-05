@@ -12,7 +12,7 @@
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1300px;
             margin: auto;
             background: white;
             padding: 25px;
@@ -40,6 +40,7 @@
             border-bottom: 1px solid #ddd;
             padding: 10px;
             text-align: left;
+            vertical-align: top;
         }
 
         th {
@@ -57,6 +58,10 @@
 
         .muted {
             color: #666;
+        }
+
+        .nowrap {
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -79,7 +84,10 @@
             <tr>
                 <th>Data wysłania</th>
                 <th>Temat</th>
-                <th>Liczba odbiorców</th>
+                <th>Firmy z bazy</th>
+                <th>Dodatkowi</th>
+                <th>Razem</th>
+                <th>Odbiorcy</th>
                 <th>Treść</th>
             </tr>
         </thead>
@@ -87,9 +95,32 @@
         <tbody>
             {% for mailing in mailingi %}
                 <tr>
-                    <td>{{ mailing.data_wyslania|date:"Y-m-d H:i" }}</td>
-                    <td>{{ mailing.temat }}</td>
-                    <td>{{ mailing.liczba_odbiorcow }}</td>
+                    <td class="nowrap">
+                        {{ mailing.data_wyslania|date:"Y-m-d H:i" }}
+                    </td>
+
+                    <td>
+                        {{ mailing.temat }}
+                    </td>
+
+                    <td>
+                        {{ mailing.liczba_firm_z_bazy }}
+                    </td>
+
+                    <td>
+                        {{ mailing.liczba_dodatkowych_odbiorcow }}
+                    </td>
+
+                    <td>
+                        {{ mailing.liczba_odbiorcow }}
+                    </td>
+
+                    <td>
+                        <div class="message">
+                            {{ mailing.odbiorcy|default:"-" }}
+                        </div>
+                    </td>
+
                     <td>
                         <div class="message">
                             {{ mailing.tresc }}
@@ -98,7 +129,7 @@
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="4">
+                    <td colspan="7">
                         Brak zapisanych mailingów.
                     </td>
                 </tr>

@@ -50,10 +50,14 @@ class SprawozdanieFinansowe(models.Model):
     def __str__(self):
         return f"{self.firma.nazwa} - {self.rok}"
 
+
 class Mailing(models.Model):
     temat = models.CharField(max_length=255)
     tresc = models.TextField()
     liczba_odbiorcow = models.IntegerField()
+    liczba_firm_z_bazy = models.IntegerField(default=0)
+    liczba_dodatkowych_odbiorcow = models.IntegerField(default=0)
+    odbiorcy = models.TextField(blank=True)
     data_wyslania = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

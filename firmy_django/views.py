@@ -114,6 +114,9 @@ def przygotuj_mailing(request):
                     temat=temat,
                     tresc=tresc,
                     liczba_odbiorcow=len(wszyscy_odbiorcy),
+                    liczba_firm_z_bazy=firmy.count(),
+                    liczba_dodatkowych_odbiorcow=len(dodatkowi_odbiorcy),
+                    odbiorcy="\n".join(wszyscy_odbiorcy),
                 )
 
                 komunikat = (
