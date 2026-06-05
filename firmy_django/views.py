@@ -5,8 +5,7 @@ from django.core.mail import send_mail
 from django.db.models import Max
 from django.shortcuts import render, get_object_or_404
 
-from .models import Firma
-
+from .models import Firma, Mailing
 
 def index(request):
     query = request.GET.get("q", "")
@@ -110,6 +109,13 @@ def przygotuj_mailing(request):
                     recipient_list=wszyscy_odbiorcy,
                     fail_silently=False,
                 )
+
+                Mailing.objects.create(
+                    temat=temat,
+                    tresc=tresc,
+                    liczba_odbiorcow=len(wszyscy_odbiorcy),
+                )
+
                 komunikat = (
                     f"Test mailingu wykonany. "
                     f"Mailing został wysłany do {len(wszyscy_odbiorcy)} odbiorców."
