@@ -112,7 +112,7 @@ def przygotuj_mailing(request):
                 )
                 komunikat = (
                     f"Test mailingu wykonany. "
-                    f"Wiadomość została wypisana w terminalu dla {len(wszyscy_odbiorcy)} odbiorców."
+                    f"Mailing został wysłany do {len(wszyscy_odbiorcy)} odbiorców."
                 )
             else:
                 komunikat = (
