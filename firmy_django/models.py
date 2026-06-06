@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 EMAIL_ZRODLO_CHOICES = [
@@ -14,6 +15,13 @@ EMAIL_ZRODLO_CHOICES = [
 
 
 class Firma(models.Model):
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="firmy",
+        null=True,
+        blank=True,
+    )
     nazwa = models.CharField(max_length=255)
     nip = models.CharField(max_length=20, blank=True)
     regon = models.CharField(max_length=20, blank=True)

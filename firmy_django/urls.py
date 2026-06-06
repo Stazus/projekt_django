@@ -1,3 +1,4 @@
+from django.contrib.auth import views as auth_views
 from django.urls import path
 from . import views
 
@@ -8,4 +9,9 @@ urlpatterns = [
     path("mailing/przygotuj/", views.przygotuj_mailing, name="przygotuj_mailing"),
     path("mailingi/", views.historia_mailingow, name="historia_mailingow"),
     path("mailingi/<int:mailing_id>/", views.szczegoly_mailingu, name="szczegoly_mailingu"),
+    path("logowanie/", auth_views.LoginView.as_view(
+        template_name="firmy_django/logowanie.html"
+    ), name="login"),
+
+    path("wylogowanie/", auth_views.LogoutView.as_view(), name="logout"),
 ]

@@ -2,12 +2,14 @@ import re
 from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.db.models import Max
 from django.shortcuts import render, get_object_or_404, redirect
 
 from .forms import RejestracjaForm
 from .models import Firma, Mailing
+
 
 def rejestracja(request):
     if request.method == "POST":
@@ -25,19 +27,18 @@ def rejestracja(request):
     })
 
 
+@login_required
 def index(request):
     query = request.GET.get("q", "")
     sort = request.GET.get("sort", "name_asc")
     min_naleznosci = request.GET.get("min_naleznosci", "")
 
-    firmy = Firma.objects.prefetch_related("sprawozdania").all()
+    firmy = Firma.objects.filter(
+        owner=request.user
+    ).prefetch_related("sprawozdania")
 
     if query:
-        firmy = firmy.filter(
-            nazwa__icontains=query
-        ) | firmy.filter(
-            nip__icontains=query
-        )
+        firmy = firmy.filter(nazwa__icontains=query) | firmy.filter(nip__icontains=query)
 
     if min_naleznosci:
         try:
@@ -51,11 +52,7 @@ def index(request):
     if sort == "name_desc":
         firmy = firmy.order_by("-nazwa")
     elif sort == "reports_desc":
-        firmy = sorted(
-            firmy,
-            key=lambda f: f.sprawozdania.count(),
-            reverse=True
-        )
+        firmy = sorted(firmy, key=lambda f: f.sprawozdania.count(), reverse=True)
     elif sort == "naleznosci_desc":
         firmy = firmy.order_by("-max_naleznosci", "nazwa")
     elif sort == "naleznosci_asc":
@@ -71,9 +68,10 @@ def index(request):
     })
 
 
+@login_required
 def szczegoly_firmy(request, firma_id):
     firma = get_object_or_404(
-        Firma.objects.prefetch_related("sprawozdania"),
+        Firma.objects.filter(owner=request.user).prefetch_related("sprawozdania"),
         id=firma_id
     )
 
@@ -97,11 +95,13 @@ def rozdziel_adresy_email(tekst):
     return list(dict.fromkeys(adresy))
 
 
+@login_required
 def przygotuj_mailing(request):
     if request.method == "POST" and request.POST.getlist("firmy_ids"):
         wybrane_firmy_ids = request.POST.getlist("firmy_ids")
 
         firmy = Firma.objects.filter(
+            owner=request.user,
             id__in=wybrane_firmy_ids,
             email__isnull=False
         ).exclude(email="")
@@ -161,6 +161,7 @@ def przygotuj_mailing(request):
     wybrane_firmy_ids = request.POST.getlist("firmy")
 
     firmy = Firma.objects.filter(
+        owner=request.user,
         id__in=wybrane_firmy_ids,
         email__isnull=False
     ).exclude(email="")
@@ -169,12 +170,18 @@ def przygotuj_mailing(request):
         "firmy": firmy,
         "liczba_firm": firmy.count(),
     })
+
+
+@login_required
 def historia_mailingow(request):
     mailingi = Mailing.objects.all().order_by("-data_wyslania")
 
     return render(request, "firmy_django/historia_mailingow.html", {
         "mailingi": mailingi,
     })
+
+
+@login_required
 def szczegoly_mailingu(request, mailing_id):
     mailing = get_object_or_404(Mailing, id=mailing_id)
 
