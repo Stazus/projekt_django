@@ -60,6 +60,13 @@ class SprawozdanieFinansowe(models.Model):
 
 
 class Mailing(models.Model):
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="mailingi",
+        null=True,
+        blank=True,
+    )
     temat = models.CharField(max_length=255)
     tresc = models.TextField()
     liczba_odbiorcow = models.IntegerField()

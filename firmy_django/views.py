@@ -129,6 +129,7 @@ def przygotuj_mailing(request):
                 )
 
                 Mailing.objects.create(
+                    owner=request.user,
                     temat=temat,
                     tresc=tresc,
                     liczba_odbiorcow=len(wszyscy_odbiorcy),
@@ -174,7 +175,7 @@ def przygotuj_mailing(request):
 
 @login_required
 def historia_mailingow(request):
-    mailingi = Mailing.objects.all().order_by("-data_wyslania")
+    mailingi = Mailing.objects.filter(owner=request.user).order_by("-data_wyslania")
 
     return render(request, "firmy_django/historia_mailingow.html", {
         "mailingi": mailingi,
@@ -183,7 +184,7 @@ def historia_mailingow(request):
 
 @login_required
 def szczegoly_mailingu(request, mailing_id):
-    mailing = get_object_or_404(Mailing, id=mailing_id)
+    mailing = get_object_or_404(Mailing, id=mailing_id, owner=request.user)
 
     return render(request, "firmy_django/szczegoly_mailingu.html", {
         "mailing": mailing,
