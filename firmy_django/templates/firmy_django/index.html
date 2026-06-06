@@ -94,13 +94,56 @@
         .mailing-header input {
             margin-right: 5px;
         }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            color: #555;
+            margin-top: 5px;
+        }
+
+        .logout-form {
+            margin: 0;
+        }
+
+        .logout-button {
+            padding: 8px 14px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
 
-    <h1>Lista firm</h1>
+    <div class="top-bar">
+        <div>
+            <h1>Lista firm</h1>
+
+            {% if user.is_authenticated %}
+                <p class="user-info">
+                    Zalogowany jako:
+                    <strong>{{ user.username }}</strong>
+                </p>
+            {% endif %}
+        </div>
+
+        {% if user.is_authenticated %}
+            <form method="post"
+                  action="{% url 'logout' %}"
+                  class="logout-form">
+                {% csrf_token %}
+                <button type="submit"
+                        class="logout-button">
+                    Wyloguj
+                </button>
+            </form>
+        {% endif %}
+    </div>
 
     <p class="muted">
         Aplikacja do analizy firm i sprawozdań finansowych.
