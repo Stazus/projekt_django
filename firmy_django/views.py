@@ -1,11 +1,29 @@
 import re
 from decimal import Decimal, InvalidOperation
 
+from django.contrib.auth import login
 from django.core.mail import send_mail
 from django.db.models import Max
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 
+from .forms import RejestracjaForm
 from .models import Firma, Mailing
+
+def rejestracja(request):
+    if request.method == "POST":
+        form = RejestracjaForm(request.POST)
+
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("home")
+    else:
+        form = RejestracjaForm()
+
+    return render(request, "firmy_django/rejestracja.html", {
+        "form": form,
+    })
+
 
 def index(request):
     query = request.GET.get("q", "")
