@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Szczegóły mailingu</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f7f7f7;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+        }
+
+        a {
+            color: #1565c0;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .box {
+            background: #f7f7f7;
+            padding: 15px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+        }
+
+        .summary {
+            background: #f1f8e9;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        .muted {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <p>
+        <a href="{% url 'historia_mailingow' %}">← Wróć do historii mailingów</a>
+    </p>
+
+    <h1>Szczegóły mailingu</h1>
+
+    <div class="summary">
+        <p><strong>Data wysłania:</strong> {{ mailing.data_wyslania|date:"Y-m-d H:i" }}</p>
+        <p><strong>Temat:</strong> {{ mailing.temat }}</p>
+        <p><strong>Firmy z bazy:</strong> {{ mailing.liczba_firm_z_bazy }}</p>
+        <p><strong>Dodatkowi odbiorcy:</strong> {{ mailing.liczba_dodatkowych_odbiorcow }}</p>
+        <p><strong>Razem odbiorców:</strong> {{ mailing.liczba_odbiorcow }}</p>
+    </div>
+
+    <h2>Odbiorcy</h2>
+
+    <div class="box">
+        {{ mailing.odbiorcy|default:"Brak zapisanej listy odbiorców." }}
+    </div>
+
+    <h2>Treść wiadomości</h2>
+
+    <div class="box">
+        {{ mailing.tresc }}
+    </div>
+
+</div>
+
+</body>
+</html>

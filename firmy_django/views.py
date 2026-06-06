@@ -157,3 +157,9 @@ def historia_mailingow(request):
     return render(request, "firmy_django/historia_mailingow.html", {
         "mailingi": mailingi,
     })
+def szczegoly_mailingu(request, mailing_id):
+    mailing = get_object_or_404(Mailing, id=mailing_id)
+
+    return render(request, "firmy_django/szczegoly_mailingu.html", {
+        "mailing": mailing,
+    })

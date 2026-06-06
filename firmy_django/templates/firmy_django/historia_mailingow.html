@@ -99,9 +99,13 @@
                         {{ mailing.data_wyslania|date:"Y-m-d H:i" }}
                     </td>
 
+
                     <td>
-                        {{ mailing.temat }}
-                    </td>
+                        <a href="{% url 'szczegoly_mailingu' mailing.id %}">
+                            {{ mailing.temat }}
+                        </a>
+                   </td>
+
 
                     <td>
                         {{ mailing.liczba_firm_z_bazy }}
