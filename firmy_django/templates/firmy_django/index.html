@@ -149,11 +149,19 @@
         Aplikacja do analizy firm i sprawozdań finansowych.
     </p>
 
-    <p>
-        <a href="{% url 'historia_mailingow' %}">
-            Historia mailingów
-        </a>
-    </p>
+
+<div style="background:#f0f7ff; border:1px solid #b6d7ff; padding:15px; border-radius:6px; margin:20px 0;">
+    <strong>Jak pobrać sprawozdanie finansowe XML?</strong>
+
+    <ol>
+        <li>Uzupełnij numer <strong>KRS</strong> firmy.</li>
+        <li>Kliknij link <strong>Pobierz z PRS</strong> przy wybranej firmie.</li>
+        <li>W serwisie PRS wpisz numer KRS firmy.</li>
+        <li>Wybierz dokument typu <strong>Roczne sprawozdanie finansowe</strong>.</li>
+        <li>Kliknij <strong>Pobierz</strong> i zapisz plik XML na dysku.</li>
+        <li>W kolejnym kroku zaimportujesz XML do aplikacji i rozpoczniesz analizę.</li>
+    </ol>
+</div>
 
 
     <form method="get" class="filters">
@@ -234,7 +242,9 @@
                     <th>Źródło</th>
                     <th>Status</th>
                     <th>REGON</th>
-                    <th>Miasto</th>
+                    <th>KRS</th>
+                    <th>Miasto</th>  
+                    <th>Sprawozdanie XML</th>
                     <th>Należności</th>
                     <th>Liczba sprawozdań</th>
                 </tr>
@@ -296,8 +306,36 @@
                         {% endif %}
                     </td>
 
-                    <td>{{ firma.regon|default:"-" }}</td>
-                    <td>{{ firma.miasto|default:"-" }}</td>
+
+<td>{{ firma.regon|default:"-" }}</td>
+<td>{{ firma.krs|default:"-" }}</td>
+<td>{{ firma.miasto|default:"-" }}</td>
+
+        
+                    <td>
+
+                        <a href="https://rdf-przegladarka.ms.gov.pl/wyszukaj-podmiot"
+                            target="_blank">
+                             Pobierz z PRS
+                        </a>
+
+                        <br>
+
+                        <a href="#"
+                            title="Funkcja w przygotowaniu">
+                            Importuj XML
+                        </a>
+
+                        <br>
+
+                        {% if firma.krs %}
+                           KRS: {{ firma.krs }}
+                        {% else %}
+                           Uzupełnij KRS firmy
+                        {% endif %}
+
+                    </td>
+
 
                     <td class="kwota">
                         {% with sprawozdanie=firma.sprawozdania.first %}
@@ -314,7 +352,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="10">
+                    <td colspan="12">
                         Brak firm spełniających podane kryteria.
                     </td>
                 </tr>

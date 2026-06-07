@@ -25,6 +25,7 @@ class Firma(models.Model):
     nazwa = models.CharField(max_length=255)
     nip = models.CharField(max_length=20, blank=True)
     regon = models.CharField(max_length=20, blank=True)
+    krs = models.CharField(max_length=20, blank=True)
     miasto = models.CharField(max_length=100, blank=True)
     email = models.EmailField(blank=True)
     email_zrodlo = models.CharField(
