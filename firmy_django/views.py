@@ -80,6 +80,33 @@ def szczegoly_firmy(request, firma_id):
     })
 
 
+@login_required
+def importuj_xml(request, firma_id):
+    firma = get_object_or_404(
+        Firma.objects.filter(owner=request.user),
+        id=firma_id
+    )
+
+    komunikat = ""
+
+    if request.method == "POST":
+        plik_xml = request.FILES.get("plik_xml")
+
+        if plik_xml:
+            komunikat = f"Plik {plik_xml.name} został odebrany przez aplikację."
+        else:
+            komunikat = "Nie wybrano pliku XML."
+
+    return render(
+        request,
+        "firmy_django/importuj_xml.html",
+        {
+            "firma": firma,
+            "komunikat": komunikat,
+        }
+    )
+
+
 def rozdziel_adresy_email(tekst):
     if not tekst:
         return []

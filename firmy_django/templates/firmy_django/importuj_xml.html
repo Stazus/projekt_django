@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Import XML</title>
+</head>
+<body>
+    <h1>Import sprawozdania XML</h1>
+
+        {% if komunikat %}
+            <p><strong>{{ komunikat }}</strong></p>
+        {% endif %}
+
+
+    <p>
+        Firma: <strong>{{ firma.nazwa }}</strong>
+    </p>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <label for="plik_xml">Wybierz plik XML:</label>
+        <input type="file" id="plik_xml" name="plik_xml" accept=".xml">
+
+        <button type="submit">
+            Importuj XML
+        </button>
+    </form>
+
+    <p>
+        <a href="{% url 'home' %}">Powrót do listy firm</a>
+    </p>
+</body>
+</html>
