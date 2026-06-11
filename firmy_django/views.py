@@ -1,5 +1,7 @@
 import re
+import xml.etree.ElementTree as ET
 from decimal import Decimal, InvalidOperation
+
 
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -93,7 +95,19 @@ def importuj_xml(request, firma_id):
         plik_xml = request.FILES.get("plik_xml")
 
         if plik_xml:
-            komunikat = f"Plik {plik_xml.name} został odebrany przez aplikację."
+            try:
+                ET.parse(plik_xml)
+
+                komunikat = (
+                    f"Plik {plik_xml.name} został odebrany "
+                    f"i poprawnie odczytany jako XML."
+                )
+
+            except ET.ParseError:
+                komunikat = (
+                    f"Błąd: plik {plik_xml.name} "
+                    f"nie jest poprawnym plikiem XML."
+                )
         else:
             komunikat = "Nie wybrano pliku XML."
 
