@@ -131,6 +131,29 @@ def importuj_xml(request, firma_id):
                     if tag == "OkresDo" and element.text:
                         rok_z_xml = element.text.strip()[:4]
 
+                firma_z_xml = None
+
+                if nip_z_xml:
+                    firma_z_xml = Firma.objects.filter(
+                        owner=request.user,
+                        nip=nip_z_xml
+                    ).first()
+
+                if not firma_z_xml and krs_z_xml:
+                    firma_z_xml = Firma.objects.filter(
+                        owner=request.user,
+                        krs=krs_z_xml
+                    ).first()
+
+                if firma_z_xml:
+                    status_firmy_w_bazie = (
+                        f"Firma z XML istnieje już w bazie: {firma_z_xml.nazwa}."
+                    )
+                else:
+                    status_firmy_w_bazie = (
+                        "Firma z XML nie istnieje jeszcze w bazie."
+                    )
+
                 katalog_importow = os.path.join(
                     "sprawozdania_xml",
                     "importy"
@@ -168,7 +191,9 @@ def importuj_xml(request, firma_id):
                         f"Dane z XML: nazwa: {nazwa_z_xml or 'brak'}, "
                         f"NIP: {nip_z_xml or 'brak'}, "
                         f"KRS: {krs_z_xml or 'brak'}, "
-                        f"Rok: {rok_z_xml or 'brak'}."
+                        f"Rok: {rok_z_xml or 'brak'}. "
+                        f"{status_firmy_w_bazie}"
+
                     )
 
                 else:
@@ -180,7 +205,8 @@ def importuj_xml(request, firma_id):
                         f"Dane z XML: nazwa: {nazwa_z_xml or 'brak'}, "
                         f"NIP: {nip_z_xml or 'brak'}, "
                         f"KRS: {krs_z_xml or 'brak'}, "
-                        f"Rok: {rok_z_xml or 'brak'}."
+                        f"Rok: {rok_z_xml or 'brak'}. "
+                        f"{status_firmy_w_bazie}"
                     )
 
             except ET.ParseError:
