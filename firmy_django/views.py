@@ -102,6 +102,17 @@ def importuj_xml(request, firma_id):
             try:
                 ET.parse(plik_xml)
 
+                plik_xml.seek(0)
+
+                zawartosc_xml = plik_xml.read().decode(
+                    "utf-8",
+                    errors="ignore"
+                )
+
+                czy_xml_pasuje_do_firmy = (
+                    firma.nazwa.upper() in zawartosc_xml.upper()
+                )
+
                 katalog_importow = os.path.join(
                     "sprawozdania_xml",
                     "importy"
@@ -130,11 +141,20 @@ def importuj_xml(request, firma_id):
                     for chunk in plik_xml.chunks():
                         destination.write(chunk)
 
-                komunikat = (
-                    f"Plik {plik_xml.name} został odebrany, "
-                    f"poprawnie odczytany jako XML "
-                    f"i zapisany na dysku."
-                )
+                if czy_xml_pasuje_do_firmy:
+                    komunikat = (
+                        f"Plik {plik_xml.name} został odebrany, "
+                        f"poprawnie odczytany jako XML "
+                        f"i zapisany na dysku. "
+                        f"XML prawdopodobnie dotyczy wybranej firmy."
+                    )
+                else:
+                    komunikat = (
+                        f"Plik {plik_xml.name} został odebrany, "
+                        f"poprawnie odczytany jako XML "
+                        f"i zapisany na dysku. "
+                        f"Uwaga: XML prawdopodobnie nie dotyczy wybranej firmy."
+                    )
 
             except ET.ParseError:
                 komunikat = (
@@ -152,6 +172,8 @@ def importuj_xml(request, firma_id):
             "komunikat": komunikat,
         }
     )
+
+
 
 
 def rozdziel_adresy_email(tekst):
