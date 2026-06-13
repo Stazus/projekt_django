@@ -246,6 +246,7 @@
                     <th>Miasto</th>  
                     <th>Sprawozdanie XML</th>
                     <th>Należności</th>
+                    <th>Lata sprawozdań</th>
                     <th>Liczba sprawozdań</th>
                 </tr>
             </thead>
@@ -307,9 +308,9 @@
                     </td>
 
 
-<td>{{ firma.regon|default:"-" }}</td>
-<td>{{ firma.krs|default:"-" }}</td>
-<td>{{ firma.miasto|default:"-" }}</td>
+                    <td>{{ firma.regon|default:"-" }}</td>
+                    <td>{{ firma.krs|default:"-" }}</td>
+                    <td>{{ firma.miasto|default:"-" }}</td>
 
         
                     <td>
@@ -346,12 +347,20 @@
                         {% endwith %}
                     </td>
 
+                     <td>
+                         {% for sprawozdanie in firma.sprawozdania.all %}
+                         {{ sprawozdanie.rok }}{% if not forloop.last %}, {% endif %}
+                         {% empty %}
+                          -
+                         {% endfor %}
+                    </td>
+
                     <td>{{ firma.sprawozdania.count }}</td>
 
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="12">
+                    <td colspan="13">
                         Brak firm spełniających podane kryteria.
                     </td>
                 </tr>
