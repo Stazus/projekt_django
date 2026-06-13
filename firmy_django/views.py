@@ -1,6 +1,10 @@
+import os
 import re
 import xml.etree.ElementTree as ET
 from decimal import Decimal, InvalidOperation
+
+from django.contrib.auth import login
+
 
 
 from django.contrib.auth import login
@@ -98,9 +102,38 @@ def importuj_xml(request, firma_id):
             try:
                 ET.parse(plik_xml)
 
+                katalog_importow = os.path.join(
+                    "sprawozdania_xml",
+                    "importy"
+                )
+
+                os.makedirs(
+                    katalog_importow,
+                    exist_ok=True
+                )
+
+                nazwa_pliku = (
+                    f"firma_{firma.id}_{plik_xml.name}"
+                )
+
+                sciezka_pliku = os.path.join(
+                    katalog_importow,
+                    nazwa_pliku
+                )
+
+                plik_xml.seek(0)
+
+                with open(
+                    sciezka_pliku,
+                    "wb+"
+                ) as destination:
+                    for chunk in plik_xml.chunks():
+                        destination.write(chunk)
+
                 komunikat = (
-                    f"Plik {plik_xml.name} został odebrany "
-                    f"i poprawnie odczytany jako XML."
+                    f"Plik {plik_xml.name} został odebrany, "
+                    f"poprawnie odczytany jako XML "
+                    f"i zapisany na dysku."
                 )
 
             except ET.ParseError:
