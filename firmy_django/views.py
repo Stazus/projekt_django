@@ -146,6 +146,9 @@ def importuj_xml(request, firma_id):
                     ).first()
 
 
+
+
+
                 if firma_z_xml:
                     status_firmy_w_bazie = (
                         f"Firma z XML istnieje już w bazie: {firma_z_xml.nazwa}."
@@ -158,19 +161,21 @@ def importuj_xml(request, firma_id):
                     if sprawozdanie_z_roku:
                         status_firmy_w_bazie += (
                             f" Sprawozdanie za rok {rok_z_xml} już istnieje w bazie."
+                            f" Możliwe, że importowany plik jest korektą istniejącego sprawozdania."
+                            f" W przyszłości będzie można zastąpić istniejące sprawozdanie,"
+                            f" zachować obie wersje, porównać je albo anulować import."
                         )
                     else:
                         status_firmy_w_bazie += (
                             f" Sprawozdanie za rok {rok_z_xml} nie istnieje jeszcze w bazie."
+                            f" Możliwe będzie dodanie nowego sprawozdania do tej firmy."
                         )
 
                 else:
                     status_firmy_w_bazie = (
                         "Firma z XML nie istnieje jeszcze w bazie."
+                        " Możliwe będzie utworzenie nowej firmy i przypisanie do niej tego sprawozdania."
                     )
-
-
-
 
 
 
