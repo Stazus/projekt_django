@@ -113,6 +113,25 @@ def importuj_xml(request, firma_id):
                     firma.nazwa.upper() in zawartosc_xml.upper()
                 )
 
+                nazwa_z_xml = ""
+                nip_z_xml = ""
+                krs_z_xml = ""
+
+                root = ET.fromstring(zawartosc_xml)
+
+                for element in root.iter():
+                    tag = element.tag.split("}")[-1]
+
+                    if tag == "NazwaFirmy" and element.text:
+                        nazwa_z_xml = element.text.strip()
+
+                    if tag == "P_1D" and element.text:
+                        nip_z_xml = element.text.strip()
+
+                    if tag == "P_1E" and element.text:
+                        krs_z_xml = element.text.strip()
+
+
                 katalog_importow = os.path.join(
                     "sprawozdania_xml",
                     "importy"
@@ -141,20 +160,30 @@ def importuj_xml(request, firma_id):
                     for chunk in plik_xml.chunks():
                         destination.write(chunk)
 
+
                 if czy_xml_pasuje_do_firmy:
                     komunikat = (
                         f"Plik {plik_xml.name} został odebrany, "
                         f"poprawnie odczytany jako XML "
                         f"i zapisany na dysku. "
-                        f"XML prawdopodobnie dotyczy wybranej firmy."
+                        f"XML prawdopodobnie dotyczy wybranej firmy. "
+                        f"Dane z XML: nazwa: {nazwa_z_xml or 'brak'}, "
+                        f"NIP: {nip_z_xml or 'brak'}, "
+                        f"KRS: {krs_z_xml or 'brak'}."
                     )
+
                 else:
                     komunikat = (
                         f"Plik {plik_xml.name} został odebrany, "
                         f"poprawnie odczytany jako XML "
                         f"i zapisany na dysku. "
-                        f"Uwaga: XML prawdopodobnie nie dotyczy wybranej firmy."
+                        f"Uwaga: XML prawdopodobnie nie dotyczy wybranej firmy. "
+                        f"Dane z XML: nazwa: {nazwa_z_xml or 'brak'}, "
+                        f"NIP: {nip_z_xml or 'brak'}, "
+                        f"KRS: {krs_z_xml or 'brak'}."
                     )
+
+
 
             except ET.ParseError:
                 komunikat = (
