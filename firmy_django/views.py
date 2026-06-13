@@ -4,10 +4,6 @@ import xml.etree.ElementTree as ET
 from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth import login
-
-
-
-from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.db.models import Max
@@ -116,6 +112,7 @@ def importuj_xml(request, firma_id):
                 nazwa_z_xml = ""
                 nip_z_xml = ""
                 krs_z_xml = ""
+                rok_z_xml = ""
 
                 root = ET.fromstring(zawartosc_xml)
 
@@ -131,6 +128,8 @@ def importuj_xml(request, firma_id):
                     if tag == "P_1E" and element.text:
                         krs_z_xml = element.text.strip()
 
+                    if tag == "OkresDo" and element.text:
+                        rok_z_xml = element.text.strip()[:4]
 
                 katalog_importow = os.path.join(
                     "sprawozdania_xml",
@@ -160,7 +159,6 @@ def importuj_xml(request, firma_id):
                     for chunk in plik_xml.chunks():
                         destination.write(chunk)
 
-
                 if czy_xml_pasuje_do_firmy:
                     komunikat = (
                         f"Plik {plik_xml.name} został odebrany, "
@@ -169,7 +167,8 @@ def importuj_xml(request, firma_id):
                         f"XML prawdopodobnie dotyczy wybranej firmy. "
                         f"Dane z XML: nazwa: {nazwa_z_xml or 'brak'}, "
                         f"NIP: {nip_z_xml or 'brak'}, "
-                        f"KRS: {krs_z_xml or 'brak'}."
+                        f"KRS: {krs_z_xml or 'brak'}, "
+                        f"Rok: {rok_z_xml or 'brak'}."
                     )
 
                 else:
@@ -180,10 +179,9 @@ def importuj_xml(request, firma_id):
                         f"Uwaga: XML prawdopodobnie nie dotyczy wybranej firmy. "
                         f"Dane z XML: nazwa: {nazwa_z_xml or 'brak'}, "
                         f"NIP: {nip_z_xml or 'brak'}, "
-                        f"KRS: {krs_z_xml or 'brak'}."
+                        f"KRS: {krs_z_xml or 'brak'}, "
+                        f"Rok: {rok_z_xml or 'brak'}."
                     )
-
-
 
             except ET.ParseError:
                 komunikat = (
@@ -201,8 +199,6 @@ def importuj_xml(request, firma_id):
             "komunikat": komunikat,
         }
     )
-
-
 
 
 def rozdziel_adresy_email(tekst):
