@@ -10,7 +10,7 @@ from django.db.models import Max
 from django.shortcuts import render, get_object_or_404, redirect
 
 from .forms import RejestracjaForm
-from .models import Firma, Mailing
+from .models import Firma, Mailing, SprawozdanieFinansowe
 
 
 def rejestracja(request):
@@ -165,10 +165,16 @@ def importuj_xml(request, firma_id):
                             f" W przyszłości będzie można zastąpić istniejące sprawozdanie,"
                             f" zachować obie wersje, porównać je albo anulować import."
                         )
+
                     else:
+                        SprawozdanieFinansowe.objects.create(
+                            firma=firma_z_xml,
+                            rok=int(rok_z_xml)
+                        )
+
                         status_firmy_w_bazie += (
-                            f" Sprawozdanie za rok {rok_z_xml} nie istnieje jeszcze w bazie."
-                            f" Możliwe będzie dodanie nowego sprawozdania do tej firmy."
+                            f" Sprawozdanie za rok {rok_z_xml} nie istniało jeszcze w bazie."
+                            f" Zostało dodane jako nowe sprawozdanie tej firmy."
                         )
 
                 else:
