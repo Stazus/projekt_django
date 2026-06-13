@@ -83,6 +83,39 @@ def szczegoly_firmy(request, firma_id):
 
 
 @login_required
+def importuj_xml_ogolny(request):
+    komunikat = ""
+
+    if request.method == "POST":
+        plik_xml = request.FILES.get("plik_xml")
+
+        if plik_xml:
+            try:
+                ET.parse(plik_xml)
+
+                komunikat = (
+                    f"Plik {plik_xml.name} został odebrany "
+                    f"i poprawnie odczytany jako XML."
+                )
+
+            except ET.ParseError:
+                komunikat = (
+                    f"Błąd: plik {plik_xml.name} "
+                    f"nie jest poprawnym plikiem XML."
+                )
+        else:
+            komunikat = "Nie wybrano pliku XML."
+
+    return render(
+        request,
+        "firmy_django/importuj_xml_ogolny.html",
+        {
+            "komunikat": komunikat,
+        }
+    )
+
+
+@login_required
 def importuj_xml(request, firma_id):
     firma = get_object_or_404(
         Firma.objects.filter(owner=request.user),
@@ -176,14 +209,25 @@ def importuj_xml(request, firma_id):
                             f" Sprawozdanie za rok {rok_z_xml} nie istniało jeszcze w bazie."
                             f" Zostało dodane jako nowe sprawozdanie tej firmy."
                         )
-
+  
                 else:
-                    status_firmy_w_bazie = (
-                        "Firma z XML nie istnieje jeszcze w bazie."
-                        " Możliwe będzie utworzenie nowej firmy i przypisanie do niej tego sprawozdania."
+                    nowa_firma = Firma.objects.create(
+                        owner=request.user,
+                        nazwa=nazwa_z_xml or plik_xml.name,
+                        nip=nip_z_xml,
+                        krs=krs_z_xml
                     )
 
+                    SprawozdanieFinansowe.objects.create(
+                        firma=nowa_firma,
+                        rok=int(rok_z_xml)
+                    )
 
+                    status_firmy_w_bazie = (
+                        "Firma z XML nie istniała jeszcze w bazie."
+                        f" Utworzono nową firmę: {nowa_firma.nazwa}."
+                        f" Dodano sprawozdanie za rok {rok_z_xml}."
+                    )
 
                 katalog_importow = os.path.join(
                     "sprawozdania_xml",

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Ogólny import XML</title>
+</head>
+<body>
+
+    <h1>Ogólny import XML</h1>
+
+    <p>
+        Wybierz plik XML pobrany z PRS. Aplikacja odczyta dane firmy,
+        sprawdzi, czy firma istnieje już w bazie i zdecyduje,
+        czy dodać nowe sprawozdanie albo utworzyć nową firmę.
+    </p>
+
+    {% if komunikat %}
+        <p><strong>{{ komunikat }}</strong></p>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <p>
+            <label for="plik_xml">Wybierz plik XML:</label>
+            <input type="file" id="plik_xml" name="plik_xml" accept=".xml">
+        </p>
+
+        <button type="submit">Importuj XML</button>
+    </form>
+
+    <p>
+        <a href="{% url 'home' %}">Powrót do listy firm</a>
+    </p>
+
+</body>
+</html>
