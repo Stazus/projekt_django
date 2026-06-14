@@ -253,8 +253,7 @@
                     <th>KRS</th>
                     <th>Miasto</th>  
                     <th>Sprawozdanie XML</th>
-                    <th>Należności</th>
-                    <th>Lata sprawozdań</th>
+                    <th>Sprawozdania finansowe</th>
                     <th>Liczba sprawozdań</th>
                 </tr>
             </thead>
@@ -346,21 +345,15 @@
 
 
                     <td class="kwota">
-                        {% with sprawozdanie=firma.sprawozdania.first %}
-                            {% if sprawozdanie %}
-                                {{ sprawozdanie.naleznosci|format_pln }} zł
-                            {% else %}
-                                -
+                        {% for sprawozdanie in firma.sprawozdania.all %}
+                            {{ sprawozdanie.rok }} —
+                            {{ sprawozdanie.naleznosci|format_pln }} zł
+                            {% if not forloop.last %}
+                                <br>
                             {% endif %}
-                        {% endwith %}
-                    </td>
-
-                     <td>
-                         {% for sprawozdanie in firma.sprawozdania.all %}
-                         {{ sprawozdanie.rok }}{% if not forloop.last %}, {% endif %}
-                         {% empty %}
-                          -
-                         {% endfor %}
+                        {% empty %}
+                            -
+                        {% endfor %}
                     </td>
 
                     <td>{{ firma.sprawozdania.count }}</td>

@@ -93,9 +93,135 @@ def importuj_xml_ogolny(request):
             try:
                 ET.parse(plik_xml)
 
-                komunikat = (
+                plik_xml.seek(0)
+
+                zawartosc_xml = plik_xml.read().decode(
+                    "utf-8",
+                    errors="ignore"
+                )
+
+                nazwa_z_xml = ""
+                nip_z_xml = ""
+                krs_z_xml = ""
+                rok_z_xml = ""
+                naleznosci_z_xml = Decimal("0")
+
+                root = ET.fromstring(zawartosc_xml)
+
+                for element in root.iter():
+                    tag = element.tag.split("}")[-1]
+
+                    if tag == "NazwaFirmy" and element.text:
+                        nazwa_z_xml = element.text.strip()
+
+                    if tag == "P_1D" and element.text:
+                        nip_z_xml = element.text.strip()
+
+                    if tag == "P_1E" and element.text:
+                        krs_z_xml = element.text.strip()
+
+                    if tag == "OkresDo" and element.text:
+                        rok_z_xml = element.text.strip()[:4]
+                        
+                    if (
+                        "Naleznosci" in tag
+                        or "Należności" in tag
+                        or "Naleznosc" in tag
+                        or "Należność" in tag
+                    ) and element.text:
+                        try:
+                            naleznosci_z_xml = Decimal(
+                                element.text.strip().replace(" ", "").replace(",", ".")
+                            )
+                        except InvalidOperation:
+                            naleznosci_z_xml = Decimal("0")  
+                            
+                    if tag == "Aktywa_B_II":
+                        for dziecko in element:
+                            tag_dziecka = dziecko.tag.split("}")[-1]
+
+                            if tag_dziecka == "KwotaA" and dziecko.text:
+                                try:
+                                    naleznosci_z_xml = Decimal(
+                                        dziecko.text.strip().replace(" ", "").replace(",", ".")
+                                    )
+
+                                    if "WTysiacach" in zawartosc_xml:
+                                        naleznosci_z_xml = naleznosci_z_xml * Decimal("1000")
+
+                                except InvalidOperation:
+                                    naleznosci_z_xml = Decimal("0")                        
+                              
+
+                firma_z_xml = Firma.objects.filter(
+                    owner=request.user,
+                    nip=nip_z_xml
+                ).first()
+
+                if not firma_z_xml and krs_z_xml:
+                    firma_z_xml = Firma.objects.filter(
+                        owner=request.user,
+                        krs=krs_z_xml
+                    ).first()
+
+                if not firma_z_xml:
+                    firma_z_xml = Firma.objects.create(
+                        owner=request.user,
+                        nazwa=nazwa_z_xml or "Nieznana firma",
+                        nip=nip_z_xml,
+                        krs=krs_z_xml,
+                    )
+
+                    komunikat = (
+                        "Firma nie istniała w bazie. "
+                        "Została utworzona automatycznie. "
+                    )
+                else:
+                    komunikat = (
+                        "Firma już istnieje w bazie. "
+                    )
+
+                if rok_z_xml:
+                    sprawozdanie_z_roku = firma_z_xml.sprawozdania.filter(
+                        rok=int(rok_z_xml)
+                    ).first()
+
+                    if not sprawozdanie_z_roku:                    
+                        SprawozdanieFinansowe.objects.create(
+                            firma=firma_z_xml,
+                            rok=int(rok_z_xml),
+                            naleznosci=naleznosci_z_xml
+                        )
+                        
+                        komunikat += (
+                            f"Dodano sprawozdanie za rok {rok_z_xml}. "
+                        )
+                            
+                    else:
+                        if sprawozdanie_z_roku.naleznosci == 0 and naleznosci_z_xml > 0:
+                            sprawozdanie_z_roku.naleznosci = naleznosci_z_xml
+                            sprawozdanie_z_roku.save()
+
+                            komunikat += (
+                                f"Sprawozdanie za rok {rok_z_xml} już istniało w bazie, "
+                                f"ale miało należności 0. "
+                                f"Należności zostały uzupełnione z XML. "
+                            )
+                        else:
+                            komunikat += (
+                                f"Sprawozdanie za rok {rok_z_xml} już istnieje w bazie. "
+                                f"Może to być korekta albo ponowny import. "
+                            )
+                            
+
+                komunikat += (
                     f"Plik {plik_xml.name} został odebrany "
-                    f"i poprawnie odczytany jako XML."
+                    f"i poprawnie odczytany jako XML. "
+                    f"Dane z XML: nazwa: {nazwa_z_xml or 'brak'}, "
+                    f"NIP: {nip_z_xml or 'brak'}, "
+                    f"KRS: {krs_z_xml or 'brak'}, "
+                    f"Rok: {rok_z_xml or 'brak'}."
+                    f"Należności: {naleznosci_z_xml}."
                 )
 
             except ET.ParseError:
