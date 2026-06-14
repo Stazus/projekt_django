@@ -272,6 +272,7 @@ def importuj_xml(request, firma_id):
                 nip_z_xml = ""
                 krs_z_xml = ""
                 rok_z_xml = ""
+                naleznosci_z_xml = Decimal("0")
 
                 root = ET.fromstring(zawartosc_xml)
 
@@ -289,6 +290,42 @@ def importuj_xml(request, firma_id):
 
                     if tag == "OkresDo" and element.text:
                         rok_z_xml = element.text.strip()[:4]
+
+                    if (
+                        "Naleznosci" in tag
+                        or "Należności" in tag
+                        or "Naleznosc" in tag
+                        or "Należność" in tag
+                    ) and element.text:
+                        try:
+                            odczytana_kwota = Decimal(
+                                element.text.strip().replace(" ", "").replace(",", ".")
+                            )
+
+                            if odczytana_kwota > 0:
+                                naleznosci_z_xml = odczytana_kwota
+
+                        except InvalidOperation:
+                            pass
+
+                    if tag == "Aktywa_B_II":
+                        for dziecko in element:
+                            tag_dziecka = dziecko.tag.split("}")[-1]
+
+                            if tag_dziecka == "KwotaA" and dziecko.text:
+                                try:
+                                    odczytana_kwota = Decimal(
+                                        dziecko.text.strip().replace(" ", "").replace(",", ".")
+                                    )
+
+                                    if "WTysiacach" in zawartosc_xml:
+                                        odczytana_kwota = odczytana_kwota * Decimal("1000")
+
+                                    if odczytana_kwota > 0:
+                                        naleznosci_z_xml = odczytana_kwota
+
+                                except InvalidOperation:
+                                    pass
 
                 firma_z_xml = None
 
@@ -328,7 +365,8 @@ def importuj_xml(request, firma_id):
                     else:
                         SprawozdanieFinansowe.objects.create(
                             firma=firma_z_xml,
-                            rok=int(rok_z_xml)
+                            rok=int(rok_z_xml),
+                            naleznosci=naleznosci_z_xml
                         )
 
                         status_firmy_w_bazie += (
@@ -346,7 +384,8 @@ def importuj_xml(request, firma_id):
 
                     SprawozdanieFinansowe.objects.create(
                         firma=nowa_firma,
-                        rok=int(rok_z_xml)
+                        rok=int(rok_z_xml),
+                        naleznosci=naleznosci_z_xml
                     )
 
                     status_firmy_w_bazie = (
@@ -393,6 +432,7 @@ def importuj_xml(request, firma_id):
                         f"NIP: {nip_z_xml or 'brak'}, "
                         f"KRS: {krs_z_xml or 'brak'}, "
                         f"Rok: {rok_z_xml or 'brak'}. "
+                        f"Należności: {naleznosci_z_xml}. "
                         f"{status_firmy_w_bazie}"
 
                     )
@@ -407,6 +447,7 @@ def importuj_xml(request, firma_id):
                         f"NIP: {nip_z_xml or 'brak'}, "
                         f"KRS: {krs_z_xml or 'brak'}, "
                         f"Rok: {rok_z_xml or 'brak'}. "
+                        f"Należności: {naleznosci_z_xml}. "
                         f"{status_firmy_w_bazie}"
                     )
 
@@ -426,7 +467,28 @@ def importuj_xml(request, firma_id):
             "komunikat": komunikat,
         }
     )
+       
+@login_required
+def usun_sprawozdanie(request, sprawozdanie_id):
+    sprawozdanie = get_object_or_404(
+        SprawozdanieFinansowe.objects.filter(
+            firma__owner=request.user
+        ),
+        id=sprawozdanie_id
+    )
 
+    if request.method == "POST":
+        firma_id = sprawozdanie.firma.id
+        sprawozdanie.delete()
+        return redirect("szczegoly_firmy", firma_id=firma_id)
+
+    return render(
+        request,
+        "firmy_django/potwierdz_usuniecie_sprawozdania.html",
+        {
+            "sprawozdanie": sprawozdanie,
+        }
+    )
 
 def rozdziel_adresy_email(tekst):
     if not tekst:

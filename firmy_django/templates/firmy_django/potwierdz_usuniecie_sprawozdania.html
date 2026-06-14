@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Usuń sprawozdanie</title>
+</head>
+<body>
+
+    <h1>Usuń sprawozdanie finansowe</h1>
+
+    <p>
+        Czy na pewno chcesz usunąć sprawozdanie?
+    </p>
+
+    <p>
+        <strong>Firma:</strong>
+        {{ sprawozdanie.firma.nazwa }}
+    </p>
+
+    <p>
+        <strong>Rok:</strong>
+        {{ sprawozdanie.rok }}
+    </p>
+
+    <p>
+        <strong>Należności:</strong>
+        {{ sprawozdanie.naleznosci }} zł
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">
+            TAK, usuń sprawozdanie
+        </button>
+    </form>
+
+    <p>
+        <a href="{% url 'szczegoly_firmy' sprawozdanie.firma.id %}">
+            Anuluj i wróć do firmy
+        </a>
+    </p>
+
+    <p>
+        <a href="{% url 'home' %}">
+            Powrót do listy firm
+        </a>
+    </p>
+
+</body>
+</html>

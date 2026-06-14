@@ -354,8 +354,13 @@
 
                     <td class="kwota">
                         {% for sprawozdanie in firma.sprawozdania.all %}
-                            {{ sprawozdanie.rok }} —
-                            {{ sprawozdanie.naleznosci|format_pln }} zł
+                        {{ sprawozdanie.rok }} —
+                        {{ sprawozdanie.naleznosci|format_pln }} zł
+
+                        <a href="{% url 'usun_sprawozdanie' sprawozdanie.id %}"
+                        style="color:#b00020; margin-left:8px;">
+                            Usuń
+                        </a>
                             {% if not forloop.last %}
                                 <br>
                             {% endif %}

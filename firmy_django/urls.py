@@ -7,6 +7,11 @@ urlpatterns = [
     path("", views.index, name="home"),
     path("importuj-xml/", views.importuj_xml_ogolny, name="importuj_xml_ogolny"),
     path("firmy/<int:firma_id>/", views.szczegoly_firmy, name="szczegoly_firmy"),
+    path(
+        "sprawozdanie/<int:sprawozdanie_id>/usun/",
+        views.usun_sprawozdanie,
+        name="usun_sprawozdanie",
+    ),
     path("mailing/przygotuj/", views.przygotuj_mailing, name="przygotuj_mailing"),
     path("mailingi/", views.historia_mailingow, name="historia_mailingow"),
     path("mailingi/<int:mailing_id>/", views.szczegoly_mailingu, name="szczegoly_mailingu"),
