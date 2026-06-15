@@ -599,3 +599,21 @@ def szczegoly_mailingu(request, mailing_id):
     return render(request, "firmy_django/szczegoly_mailingu.html", {
         "mailing": mailing,
     })
+
+
+@login_required
+def archiwizuj_sprawozdanie(request, sprawozdanie_id):
+    sprawozdanie = get_object_or_404(
+        SprawozdanieFinansowe.objects.filter(
+            firma__owner=request.user
+        ),
+        id=sprawozdanie_id
+    )
+
+    sprawozdanie.czy_zarchiwizowane = True
+    sprawozdanie.save()
+
+    return redirect(
+        "szczegoly_firmy",
+        firma_id=sprawozdanie.firma.id
+    )

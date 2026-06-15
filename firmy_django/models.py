@@ -51,6 +51,7 @@ class SprawozdanieFinansowe(models.Model):
     przychody = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     zysk_netto = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     plik_xml = models.CharField(max_length=255, blank=True)
+    czy_zarchiwizowane = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("firma", "rok")
