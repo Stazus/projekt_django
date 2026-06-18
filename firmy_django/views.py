@@ -645,3 +645,23 @@ def przywroc_sprawozdanie(request, sprawozdanie_id):
     sprawozdanie.save()
 
     return redirect("archiwum_sprawozdan")
+
+
+@login_required
+def usun_firme(request, firma_id):
+    firma = get_object_or_404(
+        Firma.objects.filter(owner=request.user),
+        id=firma_id
+    )
+
+    if request.method == "POST":
+        firma.delete()
+        return redirect("home")
+
+    return render(
+        request,
+        "firmy_django/potwierdz_usuniecie_firmy.html",
+        {
+            "firma": firma,
+        }
+    )

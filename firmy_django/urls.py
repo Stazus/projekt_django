@@ -8,6 +8,11 @@ urlpatterns = [
     path("importuj-xml/", views.importuj_xml_ogolny, name="importuj_xml_ogolny"),
     path("firmy/<int:firma_id>/", views.szczegoly_firmy, name="szczegoly_firmy"),
     path(
+        "firmy/<int:firma_id>/usun/",
+        views.usun_firme,
+        name="usun_firme",
+    ),
+    path(
         "sprawozdanie/<int:sprawozdanie_id>/usun/",
         views.usun_sprawozdanie,
         name="usun_sprawozdanie",

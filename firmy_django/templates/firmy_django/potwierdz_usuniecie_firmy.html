@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Usuń firmę</title>
+</head>
+<body>
+
+<h1>Usuń firmę</h1>
+
+<p>
+    Czy na pewno chcesz usunąć firmę:
+    <strong>{{ firma.nazwa }}</strong>?
+</p>
+
+<p>
+    Usunięte zostaną również wszystkie powiązane sprawozdania finansowe.
+</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <button type="submit">
+        Tak, usuń firmę
+    </button>
+</form>
+
+<p>
+    <a href="{% url 'szczegoly_firmy' firma.id %}">
+        Anuluj
+    </a>
+</p>
+
+</body>
+</html>
