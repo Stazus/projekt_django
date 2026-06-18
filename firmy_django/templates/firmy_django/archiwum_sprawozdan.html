@@ -3,17 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <title>Archiwum sprawozdań</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .btn-back {
+            background: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .btn-restore {
+            background: #198754;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #eeeeee;
+            text-align: left;
+            padding: 10px;
+        }
+
+        td {
+            border-top: 1px solid #dddddd;
+            padding: 10px;
+        }
+
+        .empty {
+            background: #f0f7ff;
+            border: 1px solid #b6d7ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
+
+<div class="container">
 
     <h1>Archiwum sprawozdań finansowych</h1>
 
     <p>
-        <a href="{% url 'home' %}">← Wróć do listy firm</a>
+        <a href="{% url 'home' %}" class="btn btn-back">
+            ← Wróć do listy firm
+        </a>
     </p>
 
     {% if sprawozdania %}
-        <table border="1" cellpadding="8">
+        <table>
             <thead>
                 <tr>
                     <th>Firma</th>
@@ -29,7 +99,8 @@
                         <td>{{ sprawozdanie.rok }}</td>
                         <td>{{ sprawozdanie.naleznosci }}</td>
                         <td>
-                            <a href="{% url 'przywroc_sprawozdanie' sprawozdanie.id %}">
+                            <a href="{% url 'przywroc_sprawozdanie' sprawozdanie.id %}"
+                               class="btn btn-restore">
                                 Przywróć
                             </a>
                         </td>
@@ -38,8 +109,12 @@
             </tbody>
         </table>
     {% else %}
-        <p>Brak zarchiwizowanych sprawozdań.</p>
+        <div class="empty">
+            Brak zarchiwizowanych sprawozdań.
+        </div>
     {% endif %}
+
+</div>
 
 </body>
 </html>
