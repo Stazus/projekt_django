@@ -37,6 +37,9 @@ class Firma(models.Model):
 
     def __str__(self):
         return self.nazwa
+    
+    def liczba_aktywnych_sprawozdan(self):
+        return self.sprawozdania.filter(czy_zarchiwizowane=False).count()
 
 
 class SprawozdanieFinansowe(models.Model):

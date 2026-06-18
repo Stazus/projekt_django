@@ -375,8 +375,11 @@
                         {% endfor %}
                     </td>
 
-                    <td>{{ firma.sprawozdania.count }}</td>
+                    {% comment %} <td>{{ firma.sprawozdania.count }}</td> {% endcomment %}
 
+                    <td>{{ firma.liczba_aktywnych_sprawozdan }}</td>
+
+                    
                 </tr>
                 {% empty %}
                 <tr>
