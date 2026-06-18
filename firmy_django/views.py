@@ -617,3 +617,31 @@ def archiwizuj_sprawozdanie(request, sprawozdanie_id):
         "szczegoly_firmy",
         firma_id=sprawozdanie.firma.id
     )
+
+
+@login_required
+def archiwum_sprawozdan(request):
+    sprawozdania = SprawozdanieFinansowe.objects.filter(
+        firma__owner=request.user,
+        czy_zarchiwizowane=True
+    ).select_related("firma").order_by("firma__nazwa", "-rok")
+
+    return render(request, "firmy_django/archiwum_sprawozdan.html", {
+        "sprawozdania": sprawozdania,
+    })
+
+
+@login_required
+def przywroc_sprawozdanie(request, sprawozdanie_id):
+    sprawozdanie = get_object_or_404(
+        SprawozdanieFinansowe.objects.filter(
+            firma__owner=request.user,
+            czy_zarchiwizowane=True
+        ),
+        id=sprawozdanie_id
+    )
+
+    sprawozdanie.czy_zarchiwizowane = False
+    sprawozdanie.save()
+
+    return redirect("archiwum_sprawozdan")

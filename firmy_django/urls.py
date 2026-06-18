@@ -16,7 +16,18 @@ urlpatterns = [
         "sprawozdanie/<int:sprawozdanie_id>/archiwizuj/",
         views.archiwizuj_sprawozdanie,
         name="archiwizuj_sprawozdanie",
-    ),    
+    ),   
+    path(
+        "sprawozdania/archiwum/",
+        views.archiwum_sprawozdan,
+        name="archiwum_sprawozdan",
+    ),
+
+    path(
+        "sprawozdanie/<int:sprawozdanie_id>/przywroc/",
+        views.przywroc_sprawozdanie,
+        name="przywroc_sprawozdanie",
+    ),
     path("mailing/przygotuj/", views.przygotuj_mailing, name="przygotuj_mailing"),
     path("mailingi/", views.historia_mailingow, name="historia_mailingow"),
     path("mailingi/<int:mailing_id>/", views.szczegoly_mailingu, name="szczegoly_mailingu"),

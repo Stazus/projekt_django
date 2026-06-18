@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Archiwum sprawozdań</title>
+</head>
+<body>
+
+    <h1>Archiwum sprawozdań finansowych</h1>
+
+    <p>
+        <a href="{% url 'home' %}">← Wróć do listy firm</a>
+    </p>
+
+    {% if sprawozdania %}
+        <table border="1" cellpadding="8">
+            <thead>
+                <tr>
+                    <th>Firma</th>
+                    <th>Rok</th>
+                    <th>Należności</th>
+                    <th>Akcja</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sprawozdanie in sprawozdania %}
+                    <tr>
+                        <td>{{ sprawozdanie.firma.nazwa }}</td>
+                        <td>{{ sprawozdanie.rok }}</td>
+                        <td>{{ sprawozdanie.naleznosci }}</td>
+                        <td>
+                            <a href="{% url 'przywroc_sprawozdanie' sprawozdanie.id %}">
+                                Przywróć
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Brak zarchiwizowanych sprawozdań.</p>
+    {% endif %}
+
+</body>
+</html>
