@@ -259,6 +259,62 @@ class XmlImportTests(TestCase):
         )
         
         
+class ArchiveTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="jan",
+            password="Haslo123!"
+        )
+
+        self.firma = Firma.objects.create(
+            owner=self.user,
+            nazwa="ABC Sp. z o.o."
+        )
+
+        self.sprawozdanie = SprawozdanieFinansowe.objects.create(
+            firma=self.firma,
+            rok=2024,
+            naleznosci=1000
+        )
+
+        self.client.login(
+            username="jan",
+            password="Haslo123!"
+        )
+
+    def test_archive_statement(self):
+        response = self.client.get(
+            reverse(
+                "archiwizuj_sprawozdanie",
+                args=[self.sprawozdanie.id]
+            )
+        )
+
+        self.sprawozdanie.refresh_from_db()
+
+        self.assertTrue(
+            self.sprawozdanie.czy_zarchiwizowane
+        )
+
+    def test_restore_statement(self):
+        self.sprawozdanie.czy_zarchiwizowane = True
+        self.sprawozdanie.save()
+
+        response = self.client.get(
+            reverse(
+                "przywroc_sprawozdanie",
+                args=[self.sprawozdanie.id]
+            )
+        )
+
+        self.sprawozdanie.refresh_from_db()
+
+        self.assertFalse(
+            self.sprawozdanie.czy_zarchiwizowane
+        )
+        
+        
     
         
         
