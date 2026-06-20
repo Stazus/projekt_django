@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Firma, SprawozdanieFinansowe
+from .models import Firma, SprawozdanieFinansowe, Mailing
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 
@@ -315,6 +315,55 @@ class ArchiveTests(TestCase):
         )
         
         
-    
+class MailingTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="jan",
+            password="Haslo123!"
+        )
+
+        self.client.login(
+            username="jan",
+            password="Haslo123!"
+        )
+
+    def test_create_mailing(self):
+        mailing = Mailing.objects.create(
+            owner=self.user,
+            temat="Test",
+            tresc="Treść",
+            liczba_odbiorcow=2
+        )
+
+        self.assertEqual(mailing.temat, "Test")
+        self.assertEqual(mailing.owner, self.user)
+
+    def test_user_sees_only_own_mailings(self):
+        user2 = User.objects.create_user(
+            username="adam",
+            password="Haslo123!"
+        )
+
+        Mailing.objects.create(
+            owner=self.user,
+            temat="Mój mailing",
+            tresc="abc",
+            liczba_odbiorcow=1
+        )
+
+        Mailing.objects.create(
+            owner=user2,
+            temat="Cudzy mailing",
+            tresc="xyz",
+            liczba_odbiorcow=1
+        )
+
+        response = self.client.get(
+            reverse("historia_mailingow")
+        )
+
+        self.assertContains(response, "Mój mailing")
+        self.assertNotContains(response, "Cudzy mailing")
         
         
