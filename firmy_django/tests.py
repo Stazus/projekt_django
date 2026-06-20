@@ -177,6 +177,40 @@ class DeleteCompanyTests(TestCase):
         self.assertEqual(SprawozdanieFinansowe.objects.count(), 0)
         
         
+class CompanyFilterTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="jan",
+            password="Haslo123!"
+        )
+
+        Firma.objects.create(
+            owner=self.user,
+            nazwa="Amazon",
+            nip="1111111111"
+        )
+
+        Firma.objects.create(
+            owner=self.user,
+            nazwa="Google",
+            nip="2222222222"
+        )
+
+        self.client.login(
+            username="jan",
+            password="Haslo123!"
+        )
+
+    def test_filter_company_by_name(self):
+        response = self.client.get(
+            reverse("home"),
+            {"q": "Amazon"}
+        )
+
+        self.assertContains(response, "Amazon")
+        self.assertNotContains(response, "Google")
+        
 
         
         
