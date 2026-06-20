@@ -2,7 +2,8 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Firma
+from .models import Firma, SprawozdanieFinansowe
+
 
 class AuthenticationTests(TestCase):
     def test_user_can_log_in_with_correct_credentials(self):
@@ -45,6 +46,7 @@ class AuthenticationTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertTrue(User.objects.filter(username="adam").exists())
+        
         
 class FirmaOwnershipTests(TestCase):
     def setUp(self):
@@ -109,6 +111,41 @@ class FirmaOwnershipTests(TestCase):
         self.assertEqual(response.status_code, 404)
         
         
+class SprawozdanieTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="jan",
+            password="Haslo123!"
+        )
+
+        self.firma = Firma.objects.create(
+            owner=self.user,
+            nazwa="ABC Sp. z o.o.",
+            nip="1234567890"
+        )
+
+    def test_create_financial_statement(self):
+        sprawozdanie = SprawozdanieFinansowe.objects.create(
+            firma=self.firma,
+            rok=2024,
+            naleznosci=1000
+        )
+
+        self.assertEqual(sprawozdanie.rok, 2024)
+        self.assertEqual(sprawozdanie.firma, self.firma)
+
+    def test_archived_statement_is_marked(self):
+        sprawozdanie = SprawozdanieFinansowe.objects.create(
+            firma=self.firma,
+            rok=2024,
+            czy_zarchiwizowane=True
+        )
+
+        self.assertTrue(sprawozdanie.czy_zarchiwizowane)
+        
+
+
         
         
         
