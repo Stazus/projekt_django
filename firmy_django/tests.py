@@ -145,6 +145,38 @@ class SprawozdanieTests(TestCase):
         self.assertTrue(sprawozdanie.czy_zarchiwizowane)
         
 
+class DeleteCompanyTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="jan",
+            password="Haslo123!"
+        )
+
+        self.firma = Firma.objects.create(
+            owner=self.user,
+            nazwa="ABC Sp. z o.o.",
+            nip="1234567890"
+        )
+
+    def test_delete_company(self):
+        self.firma.delete()
+
+        self.assertEqual(Firma.objects.count(), 0)
+
+    def test_delete_company_removes_related_statements(self):
+        SprawozdanieFinansowe.objects.create(
+            firma=self.firma,
+            rok=2024,
+            naleznosci=1000
+        )
+
+        self.firma.delete()
+
+        self.assertEqual(Firma.objects.count(), 0)
+        self.assertEqual(SprawozdanieFinansowe.objects.count(), 0)
+        
+        
 
         
         
