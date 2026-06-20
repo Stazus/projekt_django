@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from .models import Firma, SprawozdanieFinansowe
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class AuthenticationTests(TestCase):
@@ -212,6 +213,52 @@ class CompanyFilterTests(TestCase):
         self.assertNotContains(response, "Google")
         
 
+class XmlImportTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="jan",
+            password="Haslo123!"
+        )
+
+        self.firma = Firma.objects.create(
+            owner=self.user,
+            nazwa="ABC Sp. z o.o."
+        )
+
+        self.client.login(
+            username="jan",
+            password="Haslo123!"
+        )
+
+    def test_invalid_xml_file_does_not_create_statement(self):
+        xml_file = SimpleUploadedFile(
+            "test.xml",
+            b"to nie jest xml",
+            content_type="text/xml"
+        )
+
+        response = self.client.post(
+            reverse(
+                "importuj_xml",
+                args=[self.firma.id]
+            ),
+            {
+                "plik_xml": xml_file
+            }
+        )
+
+        self.assertContains(
+            response,
+            "nie jest poprawnym plikiem XML"
+        )
+
+        self.assertEqual(
+            SprawozdanieFinansowe.objects.count(),
+            0
+        )
         
+        
+    
         
         
