@@ -14,6 +14,13 @@ EMAIL_ZRODLO_CHOICES = [
 ]
 
 
+class Branza(models.Model):
+    nazwa = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.nazwa  
+
+
 class Firma(models.Model):
     owner = models.ForeignKey(
         User,
@@ -27,7 +34,12 @@ class Firma(models.Model):
     regon = models.CharField(max_length=20, blank=True)
     krs = models.CharField(max_length=20, blank=True)
     miasto = models.CharField(max_length=100, blank=True)
-    email = models.EmailField(blank=True)
+    email = models.EmailField(blank=True)    
+    branze = models.ManyToManyField(
+        Branza,
+        blank=True,
+        related_name="firmy"
+    )    
     email_zrodlo = models.CharField(
         max_length=50,
         choices=EMAIL_ZRODLO_CHOICES,
@@ -82,3 +94,22 @@ class Mailing(models.Model):
 
     def __str__(self):
         return f"{self.temat} ({self.data_wyslania:%Y-%m-%d %H:%M})"
+
+
+class ProfilFirmy(models.Model):
+    firma = models.OneToOneField(
+        Firma,
+        on_delete=models.CASCADE,
+        related_name="profil"
+    )
+    opis_dzialalnosci = models.TextField(blank=True)
+    strona_www = models.URLField(blank=True)
+    telefon = models.CharField(max_length=30, blank=True)
+
+    def __str__(self):
+        return f"Profil firmy: {self.firma.nazwa}"
+    
+
+
+
+

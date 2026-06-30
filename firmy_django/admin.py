@@ -1,6 +1,9 @@
 from django.contrib import admin
 
-from .models import Firma, SprawozdanieFinansowe, Mailing
+from .models import Firma, SprawozdanieFinansowe, Mailing, Branza, ProfilFirmy
+
+admin.site.register(Branza)
+admin.site.register(ProfilFirmy)
 
 class SprawozdanieFinansoweInline(admin.TabularInline):
     model = SprawozdanieFinansowe
