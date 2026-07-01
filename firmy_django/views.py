@@ -10,7 +10,7 @@ from django.db.models import Max
 from django.shortcuts import render, get_object_or_404, redirect
 
 from .forms import RejestracjaForm
-from .models import Firma, Mailing, SprawozdanieFinansowe
+from .models import Firma, Mailing, SprawozdanieFinansowe, ProfilFirmy
 
 
 def rejestracja(request):
@@ -73,12 +73,16 @@ def index(request):
 @login_required
 def szczegoly_firmy(request, firma_id):
     firma = get_object_or_404(
-        Firma.objects.filter(owner=request.user).prefetch_related("sprawozdania"),
+        Firma.objects.filter(owner=request.user)
+        .prefetch_related("sprawozdania", "branze"),
         id=firma_id
     )
 
+    profil = ProfilFirmy.objects.filter(firma=firma).first()
+
     return render(request, "firmy_django/szczegoly_firmy.html", {
         "firma": firma,
+        "profil": profil,
     })
 
 

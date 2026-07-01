@@ -51,6 +51,19 @@
             margin-top: 20px;
             margin-bottom: 25px;
         }
+
+        .section-box {
+            margin-top: 25px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f2f6fb;
+            border-radius: 6px;
+            border: 1px solid #d9e3f0;
+        }
+
+        .delete-link {
+            color: red;
+        }
     </style>
 </head>
 <body>
@@ -62,6 +75,7 @@
         <div class="company-info">
             <p><strong>NIP:</strong> {{ firma.nip|default:"-" }}</p>
             <p><strong>REGON:</strong> {{ firma.regon|default:"-" }}</p>
+            <p><strong>KRS:</strong> {{ firma.krs|default:"-" }}</p>
             <p><strong>Miasto:</strong> {{ firma.miasto|default:"-" }}</p>
 
             <p>
@@ -79,12 +93,52 @@
             </p>
         </div>
 
-            <p>
-                <a href="{% url 'usun_firme' firma.id %}"
-                style="color:red;">
-                    Usuń firmę
-                </a>
-            </p>
+        <div class="section-box">
+            <h2>Branże</h2>
+
+            <ul>
+                {% for branza in firma.branze.all %}
+                    <li>{{ branza.nazwa }}</li>
+                {% empty %}
+                    <li>Brak przypisanych branż.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="section-box">
+            <h2>Profil firmy</h2>
+
+            {% if profil %}
+                <p>
+                    <strong>Opis działalności:</strong>
+                    {{ profil.opis_dzialalnosci|default:"Brak opisu" }}
+                </p>
+
+                <p>
+                    <strong>Strona WWW:</strong>
+                    {% if profil.strona_www %}
+                        <a href="{{ profil.strona_www }}" target="_blank">
+                            {{ profil.strona_www }}
+                        </a>
+                    {% else %}
+                        Brak strony WWW
+                    {% endif %}
+                </p>
+
+                <p>
+                    <strong>Telefon:</strong>
+                    {{ profil.telefon|default:"Brak telefonu" }}
+                </p>
+            {% else %}
+                <p>Brak profilu firmy.</p>
+            {% endif %}
+        </div>
+
+        <p>
+            <a href="{% url 'usun_firme' firma.id %}" class="delete-link">
+                Usuń firmę
+            </a>
+        </p>
 
         <h2>Sprawozdania finansowe</h2>
 
