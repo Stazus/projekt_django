@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Firma, SprawozdanieFinansowe, Mailing
+from .models import Firma, SprawozdanieFinansowe, Mailing, Branza, ProfilFirmy
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 
@@ -365,5 +365,66 @@ class MailingTests(TestCase):
 
         self.assertContains(response, "Mój mailing")
         self.assertNotContains(response, "Cudzy mailing")
+        
+        
+class CompanyProfileAndIndustryTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="jan",
+            password="Haslo123!"
+        )
+
+        self.firma = Firma.objects.create(
+            owner=self.user,
+            nazwa="ABC Sp. z o.o.",
+            nip="1234567890"
+        )
+
+        self.client.login(
+            username="jan",
+            password="Haslo123!"
+        )
+
+    def test_company_can_have_profile(self):
+        profil = ProfilFirmy.objects.create(
+            firma=self.firma,
+            opis_dzialalnosci="Firma transportowa",
+            telefon="123456789"
+        )
+
+        self.assertEqual(profil.firma, self.firma)
+        self.assertEqual(self.firma.profil, profil)
+        self.assertEqual(profil.telefon, "123456789")
+
+    def test_company_can_have_many_industries(self):
+        transport = Branza.objects.create(nazwa="Transport")
+        logistyka = Branza.objects.create(nazwa="Logistyka")
+
+        self.firma.branze.add(transport, logistyka)
+
+        self.assertEqual(self.firma.branze.count(), 2)
+        self.assertIn(transport, self.firma.branze.all())
+        self.assertIn(logistyka, self.firma.branze.all())
+
+    def test_company_detail_displays_profile_and_industries(self):
+        transport = Branza.objects.create(nazwa="Transport")
+
+        self.firma.branze.add(transport)
+
+        ProfilFirmy.objects.create(
+            firma=self.firma,
+            opis_dzialalnosci="Firma transportowa",
+            telefon="123456789"
+        )
+
+        response = self.client.get(
+            reverse("szczegoly_firmy", args=[self.firma.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Transport")
+        self.assertContains(response, "Firma transportowa")
+        self.assertContains(response, "123456789")
         
         
