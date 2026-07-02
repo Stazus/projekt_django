@@ -5,6 +5,8 @@ from django.urls import reverse
 from .models import Firma, SprawozdanieFinansowe, Mailing, Branza, ProfilFirmy
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+from rest_framework.test import APIClient
+
 
 class AuthenticationTests(TestCase):
     def test_user_can_log_in_with_correct_credentials(self):
@@ -426,5 +428,105 @@ class CompanyProfileAndIndustryTests(TestCase):
         self.assertContains(response, "Transport")
         self.assertContains(response, "Firma transportowa")
         self.assertContains(response, "123456789")
+        
+        
+class RestApiTests(TestCase):
+
+    def setUp(self):
+        self.user1 = User.objects.create_user(
+            username="user1",
+            password="Haslo123!"
+        )
+        self.user2 = User.objects.create_user(
+            username="user2",
+            password="Haslo123!"
+        )
+
+        self.firma_user1 = Firma.objects.create(
+            owner=self.user1,
+            nazwa="ASAJ Sp. z o.o.",
+            nip="1111111111"
+        )
+
+        self.firma_user2 = Firma.objects.create(
+            owner=self.user2,
+            nazwa="Cudza firma",
+            nip="2222222222"
+        )
+
+        self.branza = Branza.objects.create(
+            nazwa="Transport"
+        )
+        self.firma_user1.branze.add(self.branza)
+
+        ProfilFirmy.objects.create(
+            firma=self.firma_user1,
+            opis_dzialalnosci="Firma transportowa",
+            telefon="123456789"
+        )
+
+        self.sprawozdanie = SprawozdanieFinansowe.objects.create(
+            firma=self.firma_user1,
+            rok=2024,
+            naleznosci=1000
+        )
+
+        self.client = APIClient()
+
+    def test_api_requires_authentication(self):
+        response = self.client.get("/api/firmy/")
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_sees_only_own_companies_in_api(self):
+        self.client.force_authenticate(user=self.user1)
+
+        response = self.client.get("/api/firmy/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "ASAJ Sp. z o.o.")
+        self.assertNotContains(response, "Cudza firma")
+
+    def test_user_cannot_access_other_user_company_in_api(self):
+        self.client.force_authenticate(user=self.user1)
+
+        response = self.client.get(
+            f"/api/firmy/{self.firma_user2.id}/"
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_company_detail_api_displays_profile_and_industries(self):
+        self.client.force_authenticate(user=self.user1)
+
+        response = self.client.get(
+            f"/api/firmy/{self.firma_user1.id}/"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Transport")
+        self.assertContains(response, "Firma transportowa")
+        self.assertContains(response, "123456789")
+
+    def test_api_company_search(self):
+        self.client.force_authenticate(user=self.user1)
+
+        response = self.client.get(
+            "/api/firmy/?search=ASAJ"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "ASAJ Sp. z o.o.")
+
+    def test_api_financial_statement_list(self):
+        self.client.force_authenticate(user=self.user1)
+
+        response = self.client.get(
+            "/api/sprawozdania/?search=2024"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "2024")
+        self.assertContains(response, "1000.00")
         
         
