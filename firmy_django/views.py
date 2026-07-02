@@ -12,6 +12,11 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .forms import RejestracjaForm
 from .models import Firma, Mailing, SprawozdanieFinansowe, ProfilFirmy
 
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+
+from .serializers import FirmaSerializer, SprawozdanieFinansoweSerializer
+
 
 def rejestracja(request):
     if request.method == "POST":
@@ -669,3 +674,24 @@ def usun_firme(request, firma_id):
             "firma": firma,
         }
     )
+
+
+class FirmaViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = FirmaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return (
+            Firma.objects.filter(owner=self.request.user)
+            .prefetch_related("branze", "sprawozdania")
+        )
+
+
+class SprawozdanieFinansoweViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = SprawozdanieFinansoweSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return SprawozdanieFinansowe.objects.filter(
+            firma__owner=self.request.user
+        )
