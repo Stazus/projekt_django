@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    "drf_spectacular",
 
     'firmy_django',  # Moja aplikacja
 ]
@@ -129,5 +130,34 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Projekt Django API",
+    "DESCRIPTION": """
+## REST API do zarządzania firmami oraz analizą sprawozdań finansowych.
+
+API umożliwia zarządzanie bazą firm, import i analizę sprawozdań finansowych oraz dostęp do danych poprzez bezpieczne endpointy REST.
+
+### Główne funkcjonalności
+
+- Uwierzytelnianie JWT
+- Zarządzanie firmami
+- Analiza sprawozdań finansowych
+- Filtrowanie i wyszukiwanie danych
+- Dokumentacja OpenAPI 3
+- Testy automatyczne API
+
+Projekt został wykonany jako aplikacja portfolio w Django REST Framework.
+""",
+    "VERSION": "1.0.0",
+}
+
+
+
+
+
+
 
