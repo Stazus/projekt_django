@@ -2,17 +2,15 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-EMAIL_ZRODLO_CHOICES = [
-    ("", "Brak"),
-    ("recznie", "Ręcznie"),
-    ("xml", "XML"),
-    ("strona_www", "Strona internetowa"),
-    ("ceidg", "CEIDG / biznes.gov.pl"),
-    ("gus_regon", "GUS REGON"),
-    ("krs", "KRS"),
-    ("inne", "Inne"),
-]
-
+class EmailZrodlo(models.TextChoices):
+    BRAK = "", "Brak"
+    RECZNIE = "recznie", "Ręcznie"
+    XML = "xml", "XML"
+    STRONA_WWW = "strona_www", "Strona internetowa"
+    CEIDG = "ceidg", "CEIDG / biznes.gov.pl"
+    GUS_REGON = "gus_regon", "GUS REGON"
+    KRS = "krs", "KRS"
+    INNE = "inne", "Inne"
 
 class Branza(models.Model):
     nazwa = models.CharField(max_length=100, unique=True)
@@ -42,7 +40,7 @@ class Firma(models.Model):
     )    
     email_zrodlo = models.CharField(
         max_length=50,
-        choices=EMAIL_ZRODLO_CHOICES,
+        choices=EmailZrodlo.choices,
         blank=True,
     )
     email_zrodlo_opis = models.CharField(max_length=255, blank=True)
@@ -64,13 +62,23 @@ class SprawozdanieFinansowe(models.Model):
     naleznosci = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     aktywa = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     przychody = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    zysk_netto = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    plik_xml = models.CharField(max_length=255, blank=True)
+    zysk_netto = models.DecimalField(max_digits=15, decimal_places=2, default=0)    
+    plik_xml = models.FileField(
+        upload_to="sprawozdania_xml/importy/",
+        blank=True
+    )
     czy_zarchiwizowane = models.BooleanField(default=False)
 
+
     class Meta:
-        unique_together = ("firma", "rok")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["firma", "rok"],
+                name="unique_sprawozdanie_firma_rok",
+            )
+        ]
         ordering = ["-rok"]
+        
 
     def __str__(self):
         return f"{self.firma.nazwa} - {self.rok}"
