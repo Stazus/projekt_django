@@ -472,11 +472,11 @@ class RestApiTests(TestCase):
         )
 
         self.client = APIClient()
-
+        
     def test_api_requires_authentication(self):
         response = self.client.get("/api/firmy/")
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_user_sees_only_own_companies_in_api(self):
         self.client.force_authenticate(user=self.user1)
@@ -528,5 +528,66 @@ class RestApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "2024")
         self.assertContains(response, "1000.00")
+                
+
+    def test_jwt_token_obtain(self):
+        response = self.client.post(
+            "/api/token/",
+            {
+                "username": "user1",
+                "password": "Haslo123!"
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("access", response.data)
+        self.assertIn("refresh", response.data)   
+
+
+    def test_jwt_token_refresh(self):
+        token_response = self.client.post(
+            "/api/token/",
+            {
+                "username": "user1",
+                "password": "Haslo123!"
+            },
+            format="json",
+        )
+
+        refresh_token = token_response.data["refresh"]
+
+        response = self.client.post(
+            "/api/token/refresh/",
+            {
+                "refresh": refresh_token
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("access", response.data)
+
+
+    def test_jwt_access_token_allows_api_access(self):
+        token_response = self.client.post(
+            "/api/token/",
+            {
+                "username": "user1",
+                "password": "Haslo123!"
+            },
+            format="json",
+        )
+
+        access_token = token_response.data["access"]
+
+        response = self.client.get(
+            "/api/firmy/",
+            HTTP_AUTHORIZATION=f"Bearer {access_token}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "ASAJ Sp. z o.o.")
+        self.assertNotContains(response, "Cudza firma")
         
         
