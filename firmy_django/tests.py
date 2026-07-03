@@ -7,6 +7,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from rest_framework.test import APIClient
 
+from datetime import timedelta
+from django.utils import timezone
+from rest_framework_simplejwt.tokens import AccessToken
 
 class AuthenticationTests(TestCase):
     def test_user_can_log_in_with_correct_credentials(self):
@@ -589,5 +592,34 @@ class RestApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "ASAJ Sp. z o.o.")
         self.assertNotContains(response, "Cudza firma")
+        
+        
+    def test_jwt_wrong_password_returns_401(self):
+        response = self.client.post(
+            "/api/token/",
+            {
+                "username": "user1",
+                "password": "ZleHaslo123!"
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 401)
+        
+        
+    def test_expired_jwt_token_returns_401(self):
+        token = AccessToken.for_user(self.user1)
+
+        token.set_exp(
+            from_time=timezone.now() - timedelta(minutes=10),
+            lifetime=timedelta(minutes=1),
+        )
+
+        response = self.client.get(
+            "/api/firmy/",
+            HTTP_AUTHORIZATION=f"Bearer {str(token)}"
+        )
+
+        self.assertEqual(response.status_code, 401)
         
         
