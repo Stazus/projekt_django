@@ -13,11 +13,10 @@ class ProfilFirmySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfilFirmy
         fields = [
-            "opis_dzialalnosci",
-            "strona_www",
-            "telefon",
+            "opis",
+            "logo",
+            "banner",
         ]
-
 
 class SprawozdanieFinansoweSerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,6 +48,8 @@ class FirmaSerializer(serializers.ModelSerializer):
             "krs",
             "miasto",
             "email",
+            "strona_www",
+            "telefon",
             "email_zrodlo",
             "email_zrodlo_opis",
             "branze",

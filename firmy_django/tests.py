@@ -332,38 +332,42 @@ class MailingTests(TestCase):
             username="jan",
             password="Haslo123!"
         )
-
+        
+        
     def test_create_mailing(self):
         mailing = Mailing.objects.create(
             owner=self.user,
             temat="Test",
             tresc="Treść",
-            liczba_odbiorcow=2
+            odbiorcy_zewnetrzni="jan@example.com, adam@example.com"
         )
 
         self.assertEqual(mailing.temat, "Test")
         self.assertEqual(mailing.owner, self.user)
+        self.assertEqual(mailing.liczba_dodatkowych_odbiorcow, 2)
+        self.assertEqual(mailing.liczba_odbiorcow, 2)
+        
 
     def test_user_sees_only_own_mailings(self):
         user2 = User.objects.create_user(
             username="adam",
             password="Haslo123!"
         )
-
+        
         Mailing.objects.create(
             owner=self.user,
             temat="Mój mailing",
             tresc="abc",
-            liczba_odbiorcow=1
+            odbiorcy_zewnetrzni="moj@example.com"
         )
 
         Mailing.objects.create(
             owner=user2,
             temat="Cudzy mailing",
             tresc="xyz",
-            liczba_odbiorcow=1
+            odbiorcy_zewnetrzni="cudzy@example.com"
         )
-
+        
         response = self.client.get(
             reverse("historia_mailingow")
         )
@@ -390,17 +394,21 @@ class CompanyProfileAndIndustryTests(TestCase):
             username="jan",
             password="Haslo123!"
         )
-
+        
     def test_company_can_have_profile(self):
+        self.firma.telefon = "123456789"
+        self.firma.strona_www = "https://firma.pl"
+        self.firma.save()
+
         profil = ProfilFirmy.objects.create(
             firma=self.firma,
-            opis_dzialalnosci="Firma transportowa",
-            telefon="123456789"
+            opis="Firma transportowa"
         )
 
         self.assertEqual(profil.firma, self.firma)
         self.assertEqual(self.firma.profil, profil)
-        self.assertEqual(profil.telefon, "123456789")
+        self.assertEqual(profil.opis, "Firma transportowa")
+        self.assertEqual(self.firma.telefon, "123456789")
 
     def test_company_can_have_many_industries(self):
         transport = Branza.objects.create(nazwa="Transport")
@@ -416,11 +424,12 @@ class CompanyProfileAndIndustryTests(TestCase):
         transport = Branza.objects.create(nazwa="Transport")
 
         self.firma.branze.add(transport)
+        self.firma.telefon = "123456789"
+        self.firma.save()
 
         ProfilFirmy.objects.create(
             firma=self.firma,
-            opis_dzialalnosci="Firma transportowa",
-            telefon="123456789"
+            opis="Firma transportowa"
         )
 
         response = self.client.get(
@@ -461,11 +470,12 @@ class RestApiTests(TestCase):
             nazwa="Transport"
         )
         self.firma_user1.branze.add(self.branza)
+        self.firma_user1.telefon = "123456789"
+        self.firma_user1.save()
 
         ProfilFirmy.objects.create(
             firma=self.firma_user1,
-            opis_dzialalnosci="Firma transportowa",
-            telefon="123456789"
+            opis="Firma transportowa"
         )
 
         self.sprawozdanie = SprawozdanieFinansowe.objects.create(

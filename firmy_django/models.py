@@ -32,7 +32,9 @@ class Firma(models.Model):
     regon = models.CharField(max_length=20, blank=True)
     krs = models.CharField(max_length=20, blank=True)
     miasto = models.CharField(max_length=100, blank=True)
-    email = models.EmailField(blank=True)    
+    email = models.EmailField(blank=True)
+    strona_www = models.URLField(blank=True)
+    telefon = models.CharField(max_length=30, blank=True)
     branze = models.ManyToManyField(
         Branza,
         blank=True,
@@ -94,14 +96,39 @@ class Mailing(models.Model):
     )
     temat = models.CharField(max_length=255)
     tresc = models.TextField()
-    liczba_odbiorcow = models.IntegerField()
-    liczba_firm_z_bazy = models.IntegerField(default=0)
-    liczba_dodatkowych_odbiorcow = models.IntegerField(default=0)
-    odbiorcy = models.TextField(blank=True)
+    firmy_odbiorcy = models.ManyToManyField(
+        Firma,
+        blank=True,
+        related_name="mailingi"
+    )
+    odbiorcy_zewnetrzni = models.TextField(blank=True)
     data_wyslania = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.temat} ({self.data_wyslania:%Y-%m-%d %H:%M})"
+    
+    @property
+    def lista_odbiorcow_zewnetrznych(self):
+        if not self.odbiorcy_zewnetrzni:
+            return []
+
+        return [
+            email.strip()
+            for email in self.odbiorcy_zewnetrzni.replace(";", ",").split(",")
+            if email.strip()
+        ]
+
+    @property
+    def liczba_firm_z_bazy(self):
+        return self.firmy_odbiorcy.count()
+
+    @property
+    def liczba_dodatkowych_odbiorcow(self):
+        return len(self.lista_odbiorcow_zewnetrznych)
+
+    @property
+    def liczba_odbiorcow(self):
+        return self.liczba_firm_z_bazy + self.liczba_dodatkowych_odbiorcow
 
 
 class ProfilFirmy(models.Model):
@@ -110,14 +137,16 @@ class ProfilFirmy(models.Model):
         on_delete=models.CASCADE,
         related_name="profil"
     )
-    opis_dzialalnosci = models.TextField(blank=True)
-    strona_www = models.URLField(blank=True)
-    telefon = models.CharField(max_length=30, blank=True)
+    opis = models.TextField(blank=True)
+    logo = models.FileField(
+        upload_to="profile_firm/loga/",
+        blank=True
+    )
+    banner = models.FileField(
+        upload_to="profile_firm/bannery/",
+        blank=True
+    )
 
     def __str__(self):
         return f"Profil firmy: {self.firma.nazwa}"
-    
-
-
-
 
