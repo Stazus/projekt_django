@@ -5,18 +5,22 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail
 from django.db.models import Max
 from django.shortcuts import render, get_object_or_404, redirect
 
 from .forms import RejestracjaForm
 from .models import Firma, Mailing, SprawozdanieFinansowe, ProfilFirmy
 
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
 
 from .serializers import FirmaSerializer, SprawozdanieFinansoweSerializer
 
+from .tasks import wyslij_mailing_task
+
+from drf_spectacular.utils import extend_schema
+
+from .tasks import wyslij_mailing_task
 
 def rejestracja(request):
     if request.method == "POST":
@@ -59,7 +63,11 @@ def index(request):
     if sort == "name_desc":
         firmy = firmy.order_by("-nazwa")
     elif sort == "reports_desc":
-        firmy = sorted(firmy, key=lambda f: f.sprawozdania.count(), reverse=True)
+        firmy = sorted(
+            firmy,
+            key=lambda f: f.sprawozdania.filter(zarchiwizowane=False).count(),
+            reverse=True
+        )
     elif sort == "naleznosci_desc":
         firmy = firmy.order_by("-max_naleznosci", "nazwa")
     elif sort == "naleznosci_asc":
@@ -222,14 +230,14 @@ def importuj_xml_ogolny(request):
                                 f"Może to być korekta albo ponowny import. "
                             )
                             
-
+                            
                 komunikat += (
                     f"Plik {plik_xml.name} został odebrany "
                     f"i poprawnie odczytany jako XML. "
                     f"Dane z XML: nazwa: {nazwa_z_xml or 'brak'}, "
                     f"NIP: {nip_z_xml or 'brak'}, "
                     f"KRS: {krs_z_xml or 'brak'}, "
-                    f"Rok: {rok_z_xml or 'brak'}."
+                    f"Rok: {rok_z_xml or 'brak'}. "
                     f"Należności: {naleznosci_z_xml}."
                 )
 
@@ -248,6 +256,95 @@ def importuj_xml_ogolny(request):
             "komunikat": komunikat,
         }
     )
+                            
+    
+@login_required
+def usun_sprawozdanie(request, sprawozdanie_id):
+    sprawozdanie = get_object_or_404(
+        SprawozdanieFinansowe.objects.filter(
+            firma__owner=request.user
+        ),
+        id=sprawozdanie_id
+    )
+
+    if request.method == "POST":
+        firma_id = sprawozdanie.firma.id
+        sprawozdanie.delete()
+        return redirect("szczegoly_firmy", firma_id=firma_id)
+
+    return render(
+        request,
+        "firmy_django/potwierdz_usuniecie_sprawozdania.html",
+        {
+            "sprawozdanie": sprawozdanie,
+        }
+    )   
+    
+    
+@login_required
+def usun_firme(request, firma_id):
+    firma = get_object_or_404(
+        Firma.objects.filter(owner=request.user),
+        id=firma_id
+    )
+
+    if request.method == "POST":
+        firma.delete()
+        return redirect("home")
+
+    return render(
+        request,
+        "firmy_django/potwierdz_usuniecie_firmy.html",
+        {
+            "firma": firma,
+        }
+    )
+    
+
+@login_required
+def archiwizuj_sprawozdanie(request, sprawozdanie_id):
+    sprawozdanie = get_object_or_404(
+        SprawozdanieFinansowe.objects.filter(
+            firma__owner=request.user
+        ),
+        id=sprawozdanie_id
+    )
+
+    sprawozdanie.czy_zarchiwizowane = True
+    sprawozdanie.save()
+
+    return redirect(
+        "szczegoly_firmy",
+        firma_id=sprawozdanie.firma.id
+    )
+
+
+@login_required
+def archiwum_sprawozdan(request):
+    sprawozdania = SprawozdanieFinansowe.objects.filter(
+        firma__owner=request.user,
+        czy_zarchiwizowane=True
+    ).select_related("firma").order_by("firma__nazwa", "-rok")
+
+    return render(request, "firmy_django/archiwum_sprawozdan.html", {
+        "sprawozdania": sprawozdania,
+    })
+
+
+@login_required
+def przywroc_sprawozdanie(request, sprawozdanie_id):
+    sprawozdanie = get_object_or_404(
+        SprawozdanieFinansowe.objects.filter(
+            firma__owner=request.user,
+            czy_zarchiwizowane=True
+        ),
+        id=sprawozdanie_id
+    )
+
+    sprawozdanie.czy_zarchiwizowane = False
+    sprawozdanie.save()
+
+    return redirect("archiwum_sprawozdan")
 
 
 @login_required
@@ -299,7 +396,8 @@ def importuj_xml(request, firma_id):
 
                     if tag == "OkresDo" and element.text:
                         rok_z_xml = element.text.strip()[:4]
-
+                        
+                        
                     if (
                         "Naleznosci" in tag
                         or "Należności" in tag
@@ -307,15 +405,12 @@ def importuj_xml(request, firma_id):
                         or "Należność" in tag
                     ) and element.text:
                         try:
-                            odczytana_kwota = Decimal(
+                            naleznosci_z_xml = Decimal(
                                 element.text.strip().replace(" ", "").replace(",", ".")
                             )
-
-                            if odczytana_kwota > 0:
-                                naleznosci_z_xml = odczytana_kwota
-
                         except InvalidOperation:
-                            pass
+                            naleznosci_z_xml = Decimal("0")
+                        
 
                     if tag == "Aktywa_B_II":
                         for dziecko in element:
@@ -323,18 +418,15 @@ def importuj_xml(request, firma_id):
 
                             if tag_dziecka == "KwotaA" and dziecko.text:
                                 try:
-                                    odczytana_kwota = Decimal(
+                                    naleznosci_z_xml = Decimal(
                                         dziecko.text.strip().replace(" ", "").replace(",", ".")
                                     )
 
                                     if "WTysiacach" in zawartosc_xml:
-                                        odczytana_kwota = odczytana_kwota * Decimal("1000")
-
-                                    if odczytana_kwota > 0:
-                                        naleznosci_z_xml = odczytana_kwota
+                                        naleznosci_z_xml = naleznosci_z_xml * Decimal("1000")
 
                                 except InvalidOperation:
-                                    pass
+                                    naleznosci_z_xml = Decimal("0")
 
                 firma_z_xml = None
 
@@ -349,8 +441,22 @@ def importuj_xml(request, firma_id):
                         owner=request.user,
                         krs=krs_z_xml
                     ).first()
+                    
+                print("=" * 50)
+                print("DEBUG IMPORT Z TABELI")
+                print("Plik:", plik_xml.name)
+                print("Rok:", rok_z_xml)
+                print("Należności:", naleznosci_z_xml)
+                print("=" * 50)
 
-
+                print()
+                print("=" * 60)
+                print("DEBUG")
+                print("Plik:", plik_xml.name)
+                print("Rok:", rok_z_xml)
+                print("Należności odczytane:", naleznosci_z_xml)
+                print("=" * 60)
+                print()
 
 
 
@@ -360,16 +466,26 @@ def importuj_xml(request, firma_id):
                     )
 
                     sprawozdanie_z_roku = firma_z_xml.sprawozdania.filter(
-                        rok=rok_z_xml
+                        rok=int(rok_z_xml)
                     ).first()
 
                     if sprawozdanie_z_roku:
-                        status_firmy_w_bazie += (
-                            f" Sprawozdanie za rok {rok_z_xml} już istnieje w bazie."
-                            f" Możliwe, że importowany plik jest korektą istniejącego sprawozdania."
-                            f" W przyszłości będzie można zastąpić istniejące sprawozdanie,"
-                            f" zachować obie wersje, porównać je albo anulować import."
-                        )
+                        if sprawozdanie_z_roku.naleznosci == 0 and naleznosci_z_xml > 0:
+                            sprawozdanie_z_roku.naleznosci = naleznosci_z_xml
+                            sprawozdanie_z_roku.save()
+
+                            status_firmy_w_bazie += (
+                                f" Sprawozdanie za rok {rok_z_xml} już istniało w bazie,"
+                                f" ale miało należności 0."
+                                f" Należności zostały uzupełnione z XML."
+                            )
+                        else:
+                            status_firmy_w_bazie += (
+                                f" Sprawozdanie za rok {rok_z_xml} już istnieje w bazie."
+                                f" Możliwe, że importowany plik jest korektą istniejącego sprawozdania."
+                                f" W przyszłości będzie można zastąpić istniejące sprawozdanie,"
+                                f" zachować obie wersje, porównać je albo anulować import."
+                            )
 
                     else:
                         SprawozdanieFinansowe.objects.create(
@@ -382,7 +498,7 @@ def importuj_xml(request, firma_id):
                             f" Sprawozdanie za rok {rok_z_xml} nie istniało jeszcze w bazie."
                             f" Zostało dodane jako nowe sprawozdanie tej firmy."
                         )
-  
+
                 else:
                     nowa_firma = Firma.objects.create(
                         owner=request.user,
@@ -431,34 +547,25 @@ def importuj_xml(request, firma_id):
                     for chunk in plik_xml.chunks():
                         destination.write(chunk)
 
+                komunikat = (
+                    f"Plik {plik_xml.name} został odebrany, "
+                    f"poprawnie odczytany jako XML "
+                    f"i zapisany na dysku. "
+                )
+
                 if czy_xml_pasuje_do_firmy:
-                    komunikat = (
-                        f"Plik {plik_xml.name} został odebrany, "
-                        f"poprawnie odczytany jako XML "
-                        f"i zapisany na dysku. "
-                        f"XML prawdopodobnie dotyczy wybranej firmy. "
-                        f"Dane z XML: nazwa: {nazwa_z_xml or 'brak'}, "
-                        f"NIP: {nip_z_xml or 'brak'}, "
-                        f"KRS: {krs_z_xml or 'brak'}, "
-                        f"Rok: {rok_z_xml or 'brak'}. "
-                        f"Należności: {naleznosci_z_xml}. "
-                        f"{status_firmy_w_bazie}"
-
-                    )
-
+                    komunikat += "XML prawdopodobnie dotyczy wybranej firmy. "
                 else:
-                    komunikat = (
-                        f"Plik {plik_xml.name} został odebrany, "
-                        f"poprawnie odczytany jako XML "
-                        f"i zapisany na dysku. "
-                        f"Uwaga: XML prawdopodobnie nie dotyczy wybranej firmy. "
-                        f"Dane z XML: nazwa: {nazwa_z_xml or 'brak'}, "
-                        f"NIP: {nip_z_xml or 'brak'}, "
-                        f"KRS: {krs_z_xml or 'brak'}, "
-                        f"Rok: {rok_z_xml or 'brak'}. "
-                        f"Należności: {naleznosci_z_xml}. "
-                        f"{status_firmy_w_bazie}"
-                    )
+                    komunikat += "Uwaga: XML prawdopodobnie nie dotyczy wybranej firmy. "
+
+                komunikat += (
+                    f"Dane z XML: nazwa: {nazwa_z_xml or 'brak'}, "
+                    f"NIP: {nip_z_xml or 'brak'}, "
+                    f"KRS: {krs_z_xml or 'brak'}, "
+                    f"Rok: {rok_z_xml or 'brak'}, "
+                    f"Należności: {naleznosci_z_xml}. "
+                    f"{status_firmy_w_bazie}"
+                )
 
             except ET.ParseError:
                 komunikat = (
@@ -476,28 +583,7 @@ def importuj_xml(request, firma_id):
             "komunikat": komunikat,
         }
     )
-       
-@login_required
-def usun_sprawozdanie(request, sprawozdanie_id):
-    sprawozdanie = get_object_or_404(
-        SprawozdanieFinansowe.objects.filter(
-            firma__owner=request.user
-        ),
-        id=sprawozdanie_id
-    )
 
-    if request.method == "POST":
-        firma_id = sprawozdanie.firma.id
-        sprawozdanie.delete()
-        return redirect("szczegoly_firmy", firma_id=firma_id)
-
-    return render(
-        request,
-        "firmy_django/potwierdz_usuniecie_sprawozdania.html",
-        {
-            "sprawozdanie": sprawozdanie,
-        }
-    )
 
 def rozdziel_adresy_email(tekst):
     if not tekst:
@@ -539,27 +625,24 @@ def przygotuj_mailing(request):
 
         if akcja == "wyslij_test":
             if temat and tresc and wszyscy_odbiorcy:
-                send_mail(
-                    subject=temat,
-                    message=tresc,
-                    from_email=None,
-                    recipient_list=wszyscy_odbiorcy,
-                    fail_silently=False,
+                wyslij_mailing_task.delay(
+                    temat,
+                    tresc,
+                    wszyscy_odbiorcy
                 )
 
-                Mailing.objects.create(
+                mailing = Mailing.objects.create(
                     owner=request.user,
                     temat=temat,
                     tresc=tresc,
-                    liczba_odbiorcow=len(wszyscy_odbiorcy),
-                    liczba_firm_z_bazy=firmy.count(),
-                    liczba_dodatkowych_odbiorcow=len(dodatkowi_odbiorcy),
-                    odbiorcy="\n".join(wszyscy_odbiorcy),
+                    odbiorcy_zewnetrzni="\n".join(dodatkowi_odbiorcy),
                 )
 
+                mailing.firmy_odbiorcy.set(firmy)
+
                 komunikat = (
-                    f"Test mailingu wykonany. "
-                    f"Mailing został wysłany do {len(wszyscy_odbiorcy)} odbiorców."
+                    f"Mailing został przekazany do wysłania w tle. "
+                    f"Liczba odbiorców: {len(wszyscy_odbiorcy)}."
                 )
             else:
                 komunikat = (
@@ -609,25 +692,6 @@ def szczegoly_mailingu(request, mailing_id):
         "mailing": mailing,
     })
 
-
-@login_required
-def archiwizuj_sprawozdanie(request, sprawozdanie_id):
-    sprawozdanie = get_object_or_404(
-        SprawozdanieFinansowe.objects.filter(
-            firma__owner=request.user
-        ),
-        id=sprawozdanie_id
-    )
-
-    sprawozdanie.czy_zarchiwizowane = True
-    sprawozdanie.save()
-
-    return redirect(
-        "szczegoly_firmy",
-        firma_id=sprawozdanie.firma.id
-    )
-
-
 @login_required
 def archiwum_sprawozdan(request):
     sprawozdania = SprawozdanieFinansowe.objects.filter(
@@ -656,29 +720,25 @@ def przywroc_sprawozdanie(request, sprawozdanie_id):
     return redirect("archiwum_sprawozdan")
 
 
-@login_required
-def usun_firme(request, firma_id):
-    firma = get_object_or_404(
-        Firma.objects.filter(owner=request.user),
-        id=firma_id
-    )
+@extend_schema(
+    summary="Lista firm",
+    description="""
+Zwraca listę firm należących do zalogowanego użytkownika.
 
-    if request.method == "POST":
-        firma.delete()
-        return redirect("home")
+Możliwe jest wyszukiwanie po nazwie firmy przy pomocy parametru:
 
-    return render(
-        request,
-        "firmy_django/potwierdz_usuniecie_firmy.html",
-        {
-            "firma": firma,
-        }
-    )
+?search=nazwa
+
+Endpoint wymaga uwierzytelnienia JWT lub sesji Django.
+""",
+)
 
 
 class FirmaViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = FirmaSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["nazwa", "nip", "regon", "krs", "miasto"]
 
     def get_queryset(self):
         return (
@@ -687,11 +747,31 @@ class FirmaViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
 
+
+@extend_schema(
+    summary="Lista sprawozdań finansowych",
+    description="""
+Zwraca sprawozdania finansowe zalogowanego użytkownika.
+
+Możliwe jest wyszukiwanie po roku:
+
+?search=2024
+
+Endpoint wymaga uwierzytelnienia JWT lub sesji Django.
+""",
+)
+
+
 class SprawozdanieFinansoweViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SprawozdanieFinansoweSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["rok", "firma__nazwa", "firma__nip"]
 
     def get_queryset(self):
         return SprawozdanieFinansowe.objects.filter(
             firma__owner=self.request.user
         )
+        
+        
+        
