@@ -2,6 +2,8 @@ services:
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      - USE_DOCKER=True
     volumes:
       - .:/app
     ports:
@@ -25,6 +27,8 @@ services:
   celery:
     build: .
     command: celery -A projekt_django worker -l info
+    environment:
+      - USE_DOCKER=True
     volumes:
       - .:/app
     depends_on:
