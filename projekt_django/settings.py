@@ -70,13 +70,13 @@ WSGI_APPLICATION = 'projekt_django.wsgi.application'
 
 # Database (PostgreSQL)
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'flaskdb',        # nazwa bazy danych
-        'USER': 'flaskuser',      # użytkownik PostgreSQL
-        'PASSWORD': '5555',       # hasło
-        'HOST': 'localhost',      # host bazy
-        'PORT': '5432',           # port PostgreSQL
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "projekt_django",
+        "USER": "postgres",
+        "PASSWORD": "postgres",
+        "HOST": "db",
+        "PORT": "5432",
     }
 }
 
@@ -155,10 +155,8 @@ Projekt został wykonany jako aplikacja portfolio w Django REST Framework.
     "VERSION": "1.0.0",
 }
 
-CELERY_BROKER_URL = "redis://localhost:6379/0"
-CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
-
-
+CELERY_BROKER_URL = "redis://redis:6379/0"
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"
 
 
 
