@@ -111,6 +111,13 @@
         </tbody>
     </table>
 
+    <form method="post" action="{% url 'przygotuj_mailing' %}">
+        {% csrf_token %}
+
+        {% for firma in firmy %}
+            <input type="hidden" name="firmy_ids" value="{{ firma.id }}">
+        {% endfor %}
+
         <label for="temat">
             Temat wiadomości:
         </label>
