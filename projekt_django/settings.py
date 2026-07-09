@@ -208,22 +208,3 @@ CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 
 
-if os.environ.get("CREATE_SUPERUSER") == "1":
-    try:
-        from django.contrib.auth import get_user_model
-
-        User = get_user_model()
-
-        if not User.objects.filter(username="admin").exists():
-            User.objects.create_superuser(
-                username="admin",
-                email="admin@example.com",
-                password="Admin123!"
-            )
-            print(">>> Superuser utworzony")
-        else:
-            print(">>> Superuser już istnieje")
-
-    except Exception as e:
-        print(e)
-        
