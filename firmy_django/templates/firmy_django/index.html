@@ -171,6 +171,17 @@
         Importuj XML
     </a>
 
+    <a href="{% url 'dodaj_firme' %}"
+    style="display:inline-block;
+            padding:10px 15px;
+            background:#198754;
+            color:white;
+            text-decoration:none;
+            border-radius:6px;
+            margin-right:10px;">
+        Ręcznie dodaj firmę
+    </a>
+
     <a href="https://rdf-przegladarka.ms.gov.pl/wyszukaj-podmiot"
     target="_blank"
     style="display:inline-block; padding:10px 15px; background:#198754; color:white; text-decoration:none; border-radius:6px;">
@@ -355,7 +366,6 @@
                         {% endif %}
 
                     </td>
-
 
                     <td class="kwota">
                         {% for sprawozdanie in firma.sprawozdania.all %}

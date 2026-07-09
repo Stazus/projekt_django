@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Max
 from django.shortcuts import render, get_object_or_404, redirect
 
-from .forms import RejestracjaForm
+from .forms import RejestracjaForm, FirmaForm
 from .models import Firma, Mailing, SprawozdanieFinansowe, ProfilFirmy
 
 from rest_framework import viewsets, filters
@@ -773,5 +773,26 @@ class SprawozdanieFinansoweViewSet(viewsets.ReadOnlyModelViewSet):
             firma__owner=self.request.user
         )
         
-        
+@login_required
+def dodaj_firme(request):
+    if request.method == "POST":
+        form = FirmaForm(request.POST)
+
+        if form.is_valid():
+            firma = form.save(commit=False)
+            firma.owner = request.user
+            firma.save()
+
+            return redirect("home")
+
+    else:
+        form = FirmaForm()
+
+    return render(
+        request,
+        "firmy_django/dodaj_firme.html",
+        {"form": form},
+    )
+    
+ 
         

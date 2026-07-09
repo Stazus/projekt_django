@@ -48,4 +48,10 @@ urlpatterns = [
     ), name="login"),
 
     path("wylogowanie/", auth_views.LogoutView.as_view(), name="logout"),
+    
+    path(
+        "firma/dodaj/",
+        views.dodaj_firme,
+        name="dodaj_firme",
+    ),
 ]

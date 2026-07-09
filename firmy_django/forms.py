@@ -1,8 +1,10 @@
 import re
 
 from django import forms
+from .models import Firma
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+
 
 
 class RejestracjaForm(UserCreationForm):
@@ -43,3 +45,17 @@ class RejestracjaForm(UserCreationForm):
             )
 
         return password
+
+class FirmaForm(forms.ModelForm):
+    class Meta:
+        model = Firma
+        fields = [
+            "nazwa",
+            "nip",
+            "regon",
+            "krs",
+            "miasto",
+            "email",
+            "email_zrodlo",
+        ]
+        
