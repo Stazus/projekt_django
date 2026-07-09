@@ -22,6 +22,7 @@ from drf_spectacular.utils import extend_schema
 
 from .tasks import wyslij_mailing_task
 
+
 def rejestracja(request):
     if request.method == "POST":
         form = RejestracjaForm(request.POST)
@@ -787,5 +788,30 @@ def dodaj_firme(request):
         {"form": form},
     )
     
- 
+    
+@login_required
+def edytuj_firme(request, firma_id):
+    firma = get_object_or_404(
+        Firma,
+        id=firma_id,
+        owner=request.user
+    )
+
+    if request.method == "POST":
+        form = FirmaForm(request.POST, instance=firma)
+
+        if form.is_valid():
+            form.save()
+            return redirect("szczegoly_firmy", firma_id=firma.id)
+
+    else:
+        form = FirmaForm(instance=firma)
+
+    return render(request, "firmy_django/edytuj_firme.html", {
+        "form": form,
+        "firma": firma,
+    })
+    
+    
+
         

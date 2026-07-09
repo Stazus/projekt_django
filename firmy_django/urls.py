@@ -54,4 +54,6 @@ urlpatterns = [
         views.dodaj_firme,
         name="dodaj_firme",
     ),
+    
+    path("firmy/<int:firma_id>/edytuj/", views.edytuj_firme, name="edytuj_firme"),
 ]

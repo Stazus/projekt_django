@@ -1,0 +1,17 @@
+<h1>Edytuj firmę</h1>
+
+<p>
+    <a href="{% url 'szczegoly_firmy' firma.id %}">
+        ← Wróć do szczegółów firmy
+    </a>
+</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button type="submit">
+        Zapisz zmiany
+    </button>
+</form>

@@ -72,6 +72,12 @@
 
         <h1>{{ firma.nazwa }}</h1>
 
+        <p>
+            <a href="{% url 'edytuj_firme' firma.id %}">
+                Edytuj dane firmy
+            </a>
+        </p>
+
         <div class="company-info">
             <p><strong>NIP:</strong> {{ firma.nip|default:"-" }}</p>
             <p><strong>REGON:</strong> {{ firma.regon|default:"-" }}</p>

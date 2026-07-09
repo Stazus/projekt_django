@@ -304,6 +304,13 @@
                         <a href="{% url 'szczegoly_firmy' firma.id %}">
                             {{ firma.nazwa }}
                         </a>
+
+                        <br>
+
+                        <a href="{% url 'edytuj_firme' firma.id %}"
+                        style="font-size: 0.9em;">
+                            ✏️ Edytuj
+                        </a>
                     </td>
 
                     <td>{{ firma.nip|default:"-" }}</td>
