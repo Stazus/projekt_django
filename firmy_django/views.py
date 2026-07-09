@@ -611,11 +611,8 @@ def przygotuj_mailing(request):
             email__isnull=False
         ).exclude(email="")
 
-        dodatkowi_odbiorcy_tekst = request.POST.get("dodatkowi_odbiorcy", "")
-        dodatkowi_odbiorcy = rozdziel_adresy_email(dodatkowi_odbiorcy_tekst)
-
         odbiorcy_z_bazy = [firma.email for firma in firmy]
-        wszyscy_odbiorcy = list(dict.fromkeys(odbiorcy_z_bazy + dodatkowi_odbiorcy))
+        wszyscy_odbiorcy = list(dict.fromkeys(odbiorcy_z_bazy))
 
         temat = request.POST.get("temat", "")
         tresc = request.POST.get("tresc", "")
@@ -635,7 +632,6 @@ def przygotuj_mailing(request):
                     owner=request.user,
                     temat=temat,
                     tresc=tresc,
-                    odbiorcy_zewnetrzni="\n".join(dodatkowi_odbiorcy),
                 )
 
                 mailing.firmy_odbiorcy.set(firmy)
@@ -646,14 +642,12 @@ def przygotuj_mailing(request):
                 )
             else:
                 komunikat = (
-                    "Nie wysłano testu. Uzupełnij temat, treść i przynajmniej jednego odbiorcę."
+                    "Nie wysłano mailingu. Uzupełnij temat, treść i wybierz przynajmniej jedną firmę z adresem e-mail."
                 )
 
         return render(request, "firmy_django/podsumowanie_mailing.html", {
             "firmy": firmy,
             "liczba_firm": firmy.count(),
-            "dodatkowi_odbiorcy": dodatkowi_odbiorcy,
-            "liczba_dodatkowych": len(dodatkowi_odbiorcy),
             "wszyscy_odbiorcy": wszyscy_odbiorcy,
             "liczba_wszystkich": len(wszyscy_odbiorcy),
             "temat": temat,
@@ -673,7 +667,6 @@ def przygotuj_mailing(request):
         "firmy": firmy,
         "liczba_firm": firmy.count(),
     })
-
 
 @login_required
 def historia_mailingow(request):

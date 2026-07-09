@@ -111,28 +111,6 @@
         </tbody>
     </table>
 
-    <h2>Dodatkowi odbiorcy spoza systemu</h2>
-
-    <p class="muted">
-        Możesz wkleić wiele adresów naraz — każdy w osobnej linii albo oddzielone przecinkami lub średnikami.
-    </p>
-
-    <form method="post">
-        {% csrf_token %}
-
-        {% for firma in firmy %}
-            <input type="hidden" name="firmy_ids" value="{{ firma.id }}">
-        {% endfor %}
-
-        <label for="dodatkowi_odbiorcy">
-            Dodatkowi odbiorcy:
-        </label>
-        <textarea
-            id="dodatkowi_odbiorcy"
-            name="dodatkowi_odbiorcy"
-            placeholder="np. firma1@example.com&#10;firma2@example.com&#10;firma3@example.com"
-        ></textarea>
-
         <label for="temat">
             Temat wiadomości:
         </label>
