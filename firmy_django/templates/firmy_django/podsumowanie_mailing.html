@@ -90,8 +90,6 @@
 
     <div class="summary">
         <p>Firmy z bazy: <strong>{{ liczba_firm }}</strong></p>
-        <p>Dodatkowi odbiorcy: <strong>{{ liczba_dodatkowych }}</strong></p>
-        <p>Razem odbiorców: <strong>{{ liczba_wszystkich }}</strong></p>
     </div>
 
     <h2>Odbiorcy z bazy</h2>
@@ -119,27 +117,6 @@
         </tbody>
     </table>
 
-    <h2>Dodatkowi odbiorcy</h2>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Email</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for email in dodatkowi_odbiorcy %}
-                <tr>
-                    <td>{{ email }}</td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td>Brak dodatkowych odbiorców.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
     <h2>Temat wiadomości</h2>
 
     <div class="message-box">
@@ -157,10 +134,6 @@
 
         {% for firma in firmy %}
             <input type="hidden" name="firmy_ids" value="{{ firma.id }}">
-        {% endfor %}
-
-        {% for email in dodatkowi_odbiorcy %}
-            <input type="hidden" name="dodatkowi_odbiorcy" value="{{ email }}">
         {% endfor %}
 
         <input type="hidden" name="temat" value="{{ temat }}">
