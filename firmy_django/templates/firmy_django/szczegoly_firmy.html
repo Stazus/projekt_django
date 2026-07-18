@@ -73,6 +73,17 @@
         <h1>{{ firma.nazwa }}</h1>
 
         <p>
+            <a href="{% url 'edytuj_profil_firmy' firma.id %}">
+                {% if profil %}
+                    Edytuj profil firmy
+                {% else %}
+                    Dodaj profil firmy
+                {% endif %}
+            </a>
+        </p>
+
+
+        <p>
             <a href="{% url 'edytuj_firme' firma.id %}">
                 Edytuj dane firmy
             </a>

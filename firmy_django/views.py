@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Max
 from django.shortcuts import render, get_object_or_404, redirect
 
-from .forms import RejestracjaForm, FirmaForm
+from .forms import RejestracjaForm, FirmaForm, ProfilFirmyForm
 from .models import Firma, Mailing, SprawozdanieFinansowe, ProfilFirmy
 
 from rest_framework import viewsets, filters
@@ -21,6 +21,8 @@ from .tasks import wyslij_mailing_task
 from drf_spectacular.utils import extend_schema
 
 from .tasks import wyslij_mailing_task
+
+
 
 
 def rejestracja(request):
@@ -813,5 +815,42 @@ def edytuj_firme(request, firma_id):
     })
     
     
+@login_required
+def edytuj_profil_firmy(request, firma_id):
+    firma = get_object_or_404(
+        Firma,
+        id=firma_id,
+        owner=request.user,
+    )
 
+    profil, utworzony = ProfilFirmy.objects.get_or_create(
+        firma=firma
+    )
+
+    if request.method == "POST":
+        form = ProfilFirmyForm(
+            request.POST,
+            request.FILES,
+            instance=profil,
+        )
+
+        if form.is_valid():
+            form.save()
+
+            return redirect(
+                "szczegoly_firmy",
+                firma_id=firma.id,
+            )
+
+    else:
+        form = ProfilFirmyForm(instance=profil)
+
+    return render(
+        request,
+        "firmy_django/edytuj_profil_firmy.html",
+        {
+            "firma": firma,
+            "form": form,
+        },
+    )
         

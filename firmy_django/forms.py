@@ -1,7 +1,7 @@
 import re
 
 from django import forms
-from .models import Firma
+from .models import Firma, ProfilFirmy
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
@@ -65,3 +65,11 @@ class FirmaForm(forms.ModelForm):
             "branze": forms.CheckboxSelectMultiple(),
         }
         
+class ProfilFirmyForm(forms.ModelForm):
+    class Meta:
+        model = ProfilFirmy
+        fields = [
+            "opis",
+            "logo",
+            "banner",
+        ]
