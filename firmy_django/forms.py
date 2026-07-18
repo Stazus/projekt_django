@@ -46,6 +46,7 @@ class RejestracjaForm(UserCreationForm):
 
         return password
 
+
 class FirmaForm(forms.ModelForm):
     class Meta:
         model = Firma
@@ -57,5 +58,10 @@ class FirmaForm(forms.ModelForm):
             "miasto",
             "email",
             "email_zrodlo",
+            "branze",
         ]
+        
+        widgets = {
+            "branze": forms.CheckboxSelectMultiple(),
+        }
         
