@@ -442,6 +442,98 @@ class CompanyProfileAndIndustryTests(TestCase):
         self.assertContains(response, "123456789")
         
         
+    def test_owner_can_create_company_profile(self):
+        response = self.client.post(
+            reverse(
+                "edytuj_profil_firmy",
+                args=[self.firma.id]
+            ),
+            {
+                "opis": "Nowy opis działalności firmy",
+            }
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "szczegoly_firmy",
+                args=[self.firma.id]
+            )
+        )
+
+        profil = ProfilFirmy.objects.get(firma=self.firma)
+
+        self.assertEqual(
+            profil.opis,
+            "Nowy opis działalności firmy"
+        )
+
+    def test_owner_can_update_existing_company_profile(self):
+        profil = ProfilFirmy.objects.create(
+            firma=self.firma,
+            opis="Stary opis"
+        )
+
+        response = self.client.post(
+            reverse(
+                "edytuj_profil_firmy",
+                args=[self.firma.id]
+            ),
+            {
+                "opis": "Zaktualizowany opis",
+            }
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "szczegoly_firmy",
+                args=[self.firma.id]
+            )
+        )
+
+        profil.refresh_from_db()
+
+        self.assertEqual(
+            profil.opis,
+            "Zaktualizowany opis"
+        )
+
+        self.assertEqual(
+            ProfilFirmy.objects.filter(
+                firma=self.firma
+            ).count(),
+            1
+        )
+
+    def test_user_cannot_edit_another_users_company_profile(self):
+        other_user = User.objects.create_user(
+            username="anna",
+            password="Haslo456!"
+        )
+
+        other_company = Firma.objects.create(
+            owner=other_user,
+            nazwa="Firma innego użytkownika",
+            nip="9876543210"
+        )
+
+        response = self.client.get(
+            reverse(
+                "edytuj_profil_firmy",
+                args=[other_company.id]
+            )
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+        self.assertFalse(
+            ProfilFirmy.objects.filter(
+                firma=other_company
+            ).exists()
+        )
+        
+        
 class RestApiTests(TestCase):
 
     def setUp(self):
