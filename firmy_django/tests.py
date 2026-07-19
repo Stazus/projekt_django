@@ -533,6 +533,110 @@ class CompanyProfileAndIndustryTests(TestCase):
             ).exists()
         )
         
+    def test_logo_txt_file_is_rejected(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        txt = SimpleUploadedFile(
+            "logo.txt",
+            b"To nie jest obraz",
+            content_type="text/plain"
+        )
+
+        response = self.client.post(
+            reverse("edytuj_profil_firmy", args=[self.firma.id]),
+            {
+                "opis": "Opis",
+                "logo": txt,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "Logo musi być plikiem JPG, PNG lub WebP."
+        )
+        
+    def test_banner_txt_file_is_rejected(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        txt = SimpleUploadedFile(
+            "banner.txt",
+            b"To nie jest obraz",
+            content_type="text/plain"
+        )
+
+        response = self.client.post(
+            reverse("edytuj_profil_firmy", args=[self.firma.id]),
+            {
+                "opis": "Opis",
+                "banner": txt,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertContains(
+            response,
+            "Banner musi być plikiem JPG, PNG lub WebP."
+        )
+        
+    def test_existing_logo_is_preserved_when_only_description_is_updated(self):
+        logo = SimpleUploadedFile(
+            "logo.png",
+            b"fake-image-content",
+            content_type="image/png",
+        )
+
+        profil = ProfilFirmy.objects.create(
+            firma=self.firma,
+            opis="Stary opis",
+            logo=logo,
+        )
+
+        old_logo_name = profil.logo.name
+
+        response = self.client.post(
+            reverse("edytuj_profil_firmy", args=[self.firma.id]),
+            {
+                "opis": "Nowy opis",
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("szczegoly_firmy", args=[self.firma.id]),
+        )
+
+        profil.refresh_from_db()
+
+        self.assertEqual(profil.opis, "Nowy opis")
+        self.assertEqual(profil.logo.name, old_logo_name)
+        
+    def test_too_large_logo_is_rejected(self):
+        large_logo = SimpleUploadedFile(
+            "logo.png",
+            b"x" * (2 * 1024 * 1024 + 1),
+            content_type="image/png",
+        )
+
+        response = self.client.post(
+            reverse("edytuj_profil_firmy", args=[self.firma.id]),
+            {
+                "opis": "Opis",
+                "logo": large_logo,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertContains(
+            response,
+            "Logo nie może być większe niż 2 MB."
+        )
+
+        profil = ProfilFirmy.objects.get(firma=self.firma)
+
+        self.assertEqual(profil.logo.name, "")
         
 class RestApiTests(TestCase):
 

@@ -31,3 +31,7 @@ Thumbs.db
 # Temp / backup files
 *.bak
 *.swp
+
+# Django uploaded media
+media/
+profile_firm/

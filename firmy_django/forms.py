@@ -73,3 +73,65 @@ class ProfilFirmyForm(forms.ModelForm):
             "logo",
             "banner",
         ]
+
+    def clean_logo(self):
+        logo = self.cleaned_data.get("logo")
+        uploaded_logo = self.files.get("logo")
+
+        if uploaded_logo:
+            allowed_extensions = ["jpg", "jpeg", "png", "webp"]
+            extension = uploaded_logo.name.rsplit(".", 1)[-1].lower()
+
+            if extension not in allowed_extensions:
+                raise forms.ValidationError(
+                    "Logo musi być plikiem JPG, PNG lub WebP."
+                )
+
+            allowed_types = [
+                "image/jpeg",
+                "image/png",
+                "image/webp",
+            ]
+
+            if uploaded_logo.content_type not in allowed_types:
+                raise forms.ValidationError(
+                    "Logo musi być prawidłowym obrazem JPG, PNG lub WebP."
+                )
+
+            if uploaded_logo.size > 2 * 1024 * 1024:
+                raise forms.ValidationError(
+                    "Logo nie może być większe niż 2 MB."
+                )
+
+        return logo
+
+    def clean_banner(self):
+        banner = self.cleaned_data.get("banner")
+        uploaded_banner = self.files.get("banner")
+
+        if uploaded_banner:
+            allowed_extensions = ["jpg", "jpeg", "png", "webp"]
+            extension = uploaded_banner.name.rsplit(".", 1)[-1].lower()
+
+            if extension not in allowed_extensions:
+                raise forms.ValidationError(
+                    "Banner musi być plikiem JPG, PNG lub WebP."
+                )
+
+            allowed_types = [
+                "image/jpeg",
+                "image/png",
+                "image/webp",
+            ]
+
+            if uploaded_banner.content_type not in allowed_types:
+                raise forms.ValidationError(
+                    "Banner musi być prawidłowym obrazem JPG, PNG lub WebP."
+                )
+
+            if uploaded_banner.size > 5 * 1024 * 1024:
+                raise forms.ValidationError(
+                    "Banner nie może być większy niż 5 MB."
+                )
+
+        return banner

@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+
     <title>{{ firma.nazwa }}</title>
 
     {% load custom_filters %}
@@ -64,10 +65,68 @@
         .delete-link {
             color: red;
         }
+
+        .profil-firmy-zawartosc {
+            display: flex;
+            align-items: flex-start;
+            gap: 24px;
+        }
+
+        .profil-logo {
+            flex-shrink: 0;
+        }
+
+        .profil-logo img {
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: white;
+            border: 1px solid #d7e0ea;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .profil-informacje {
+            flex: 1;
+        }
+
+        .profil-informacje p {
+            margin: 0 0 12px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 700px) {
+            .profil-firmy-zawartosc {
+                flex-direction: column;
+            }
+
+            .profil-logo img {
+                width: 130px;
+                height: 130px;
+            }
+        }
+            .company-banner {
+                width: 100%;
+                max-height: 300px;
+                object-fit: cover;
+                display: block;
+                border-radius: 10px;
+                margin-bottom: 24px;
+            }
     </style>
 </head>
 <body>
     <div class="container">
+
+        {% if profil and profil.banner %}
+            <img
+                src="{{ profil.banner.url }}"
+                alt="Banner firmy {{ firma.nazwa }}"
+                class="company-banner"
+            >
+        {% endif %}
+
         <p><a href="{% url 'home' %}">← Wróć do listy firm</a></p>
 
         <h1>{{ firma.nazwa }}</h1>
@@ -126,29 +185,53 @@
             <h2>Profil firmy</h2>
 
             {% if profil %}
-                <p>
-                    <strong>Opis działalności:</strong>
-                    {{ profil.opis|default:"Brak opisu" }}
-                </p>
+                <div class="profil-firmy-zawartosc">
 
-                <p>
-                    <strong>Strona WWW:</strong>
-                    {% if profil.strona_www %}
-                        <a href="{{ profil.strona_www }}" target="_blank">
-                            {{ profil.strona_www }}
-                        </a>
-                    {% else %}
-                        Brak strony WWW
+                    {% if profil.logo %}
+                        <div class="profil-logo">
+                            <img
+                                src="{{ profil.logo.url }}"
+                                alt="Logo firmy {{ firma.nazwa }}"
+                            >
+                        </div>
                     {% endif %}
-                </p>
 
-                <p>
-                    <strong>Telefon:</strong>
-                    {{ profil.telefon|default:"Brak telefonu" }}
-                </p>
+                    <div class="profil-informacje">
+
+                        <p>
+                            <strong>Opis działalności:</strong>
+                            {{ profil.opis|default:"Brak opisu działalności" }}
+                        </p>
+
+                        <p>
+                            <strong>Strona WWW:</strong>
+
+                            {% if firma.strona_www %}
+                                <a href="{{ firma.strona_www }}" target="_blank">
+                                    {{ firma.strona_www }}
+                                </a>
+                            {% else %}
+                                Brak strony WWW
+                            {% endif %}
+                        </p>
+
+                        <p>
+                            <strong>Telefon:</strong>
+
+                            {{ firma.telefon|default:"Brak telefonu" }}
+
+                        </p>
+
+                    </div>
+
+                </div>
+
             {% else %}
+
                 <p>Brak profilu firmy.</p>
+
             {% endif %}
+
         </div>
 
         <p>
