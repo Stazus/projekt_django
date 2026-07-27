@@ -829,3 +829,96 @@ class RestApiTests(TestCase):
         self.assertEqual(response.status_code, 401)
         
         
+
+
+class ProfilFirmyTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="profil_user",
+            password="Haslo123!"
+        )
+
+        self.firma = Firma.objects.create(
+            owner=self.user,
+            nazwa="Firma Profilowa Sp. z o.o.",
+            nip="1234567890"
+        )
+
+        self.client.login(
+            username="profil_user",
+            password="Haslo123!"
+        )
+
+    def test_profile_saves_phone_number(self):
+        response = self.client.post(
+            reverse(
+                "edytuj_profil_firmy",
+                args=[self.firma.id]
+            ),
+            {
+                "opis": "Opis testowy firmy",
+                "telefon": "+48 600 700 800",
+                "strona_www": "",
+            }
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        profil = ProfilFirmy.objects.get(
+            firma=self.firma
+        )
+
+        self.assertEqual(
+            profil.telefon,
+            "+48 600 700 800"
+        )
+
+    def test_profile_saves_website(self):
+        response = self.client.post(
+            reverse(
+                "edytuj_profil_firmy",
+                args=[self.firma.id]
+            ),
+            {
+                "opis": "Opis testowy firmy",
+                "telefon": "",
+                "strona_www": "https://example.pl",
+            }
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        profil = ProfilFirmy.objects.get(
+            firma=self.firma
+        )
+
+        self.assertEqual(
+            profil.strona_www,
+            "https://example.pl"
+        )
+
+    def test_company_details_display_phone_and_website(self):
+        ProfilFirmy.objects.create(
+            firma=self.firma,
+            opis="Opis testowy firmy",
+            telefon="+48 600 700 800",
+            strona_www="https://example.pl"
+        )
+
+        response = self.client.get(
+            reverse(
+                "szczegoly_firmy",
+                args=[self.firma.id]
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "+48 600 700 800"
+        )
+        self.assertContains(
+            response,
+            "https://example.pl"
+        )

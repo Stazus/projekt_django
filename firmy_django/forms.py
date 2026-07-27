@@ -72,7 +72,24 @@ class ProfilFirmyForm(forms.ModelForm):
             "opis",
             "logo",
             "banner",
+            "telefon",
+            "strona_www",
         ]
+
+
+        labels = {
+            "telefon": "Telefon",
+            "strona_www": "Strona WWW",
+        }
+        widgets = {
+            "telefon": forms.TextInput(
+                attrs={"placeholder": "np. +48 500 600 700"}
+            ),
+            "strona_www": forms.URLInput(
+                attrs={"placeholder": "https://example.pl"}
+            ),
+        }
+
 
     def clean_logo(self):
         logo = self.cleaned_data.get("logo")

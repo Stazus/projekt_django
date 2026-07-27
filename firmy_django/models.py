@@ -146,6 +146,14 @@ class ProfilFirmy(models.Model):
         upload_to="profile_firm/bannery/",
         blank=True
     )
+    telefon = models.CharField(
+        max_length=30,
+        blank=True
+    )
+
+    strona_www = models.URLField(
+        blank=True
+    )
 
     def __str__(self):
         return f"Profil firmy: {self.firma.nazwa}"

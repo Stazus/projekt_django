@@ -206,9 +206,11 @@
                         <p>
                             <strong>Strona WWW:</strong>
 
-                            {% if firma.strona_www %}
-                                <a href="{{ firma.strona_www }}" target="_blank">
-                                    {{ firma.strona_www }}
+                            {% if profil.strona_www %}
+                                <a href="{{ profil.strona_www }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer">
+                                    {{ profil.strona_www }}
                                 </a>
                             {% else %}
                                 Brak strony WWW
@@ -218,7 +220,13 @@
                         <p>
                             <strong>Telefon:</strong>
 
-                            {{ firma.telefon|default:"Brak telefonu" }}
+                            {% if profil.telefon %}
+                                <a href="tel:{{ profil.telefon }}">
+                                    {{ profil.telefon }}
+                                </a>
+                            {% else %}
+                                Brak telefonu
+                            {% endif %}
 
                         </p>
 
