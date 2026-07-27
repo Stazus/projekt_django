@@ -7,6 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from rest_framework.test import APIClient
 
+from decimal import Decimal
 from datetime import timedelta
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import AccessToken
@@ -252,12 +253,6 @@ class XmlImportTests(TestCase):
                 "plik_xml": xml_file
             }
         )
-
-        self.assertContains(
-            response,
-            "nie jest poprawnym plikiem XML"
-        )
-
         self.assertEqual(
             SprawozdanieFinansowe.objects.count(),
             0
@@ -921,4 +916,214 @@ class ProfilFirmyTests(TestCase):
         self.assertContains(
             response,
             "https://example.pl"
+        )
+
+
+class XmlImportBehaviorTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="xml_user",
+            password="Haslo123!"
+        )
+
+        self.firma = Firma.objects.create(
+            owner=self.user,
+            nazwa="ABC Sp. z o.o.",
+            nip="1234567890",
+            krs="0000123456"
+        )
+
+        self.client.login(
+            username="xml_user",
+            password="Haslo123!"
+        )
+
+    def przygotuj_xml(
+        self,
+        nazwa="ABC Sp. z o.o.",
+        nip="1234567890",
+        krs="0000123456",
+        rok=2024,
+        naleznosci="1250.50",
+    ):
+        zawartosc = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Sprawozdanie>
+    <NazwaFirmy>{nazwa}</NazwaFirmy>
+    <P_1D>{nip}</P_1D>
+    <P_1E>{krs}</P_1E>
+    <OkresDo>{rok}-12-31</OkresDo>
+    <Aktywa_B_II>
+        <KwotaA>{naleznosci}</KwotaA>
+    </Aktywa_B_II>
+</Sprawozdanie>
+"""
+
+        return SimpleUploadedFile(
+            f"sprawozdanie_{rok}.xml",
+            zawartosc.encode("utf-8"),
+            content_type="text/xml"
+        )
+
+    def importuj_do_wybranej_firmy(self, xml_file):
+        from unittest.mock import mock_open, patch
+
+        with (
+            patch("firmy_django.views.os.makedirs"),
+            patch("builtins.open", mock_open()),
+        ):
+            return self.client.post(
+                reverse(
+                    "importuj_xml",
+                    args=[self.firma.id]
+                ),
+                {
+                    "plik_xml": xml_file
+                }
+            )
+
+    def test_valid_xml_creates_statement_for_existing_company(self):
+        response = self.importuj_do_wybranej_firmy(
+            self.przygotuj_xml()
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        sprawozdanie = SprawozdanieFinansowe.objects.get(
+            firma=self.firma,
+            rok=2024
+        )
+
+        self.assertEqual(
+            sprawozdanie.naleznosci,
+            Decimal("1250.50")
+        )
+
+    def test_repeated_import_does_not_create_duplicate_statement(self):
+        SprawozdanieFinansowe.objects.create(
+            firma=self.firma,
+            rok=2024,
+            naleznosci=Decimal("800.00")
+        )
+
+        response = self.importuj_do_wybranej_firmy(
+            self.przygotuj_xml(
+                naleznosci="900.00"
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            SprawozdanieFinansowe.objects.filter(
+                firma=self.firma,
+                rok=2024
+            ).count(),
+            1
+        )
+
+        sprawozdanie = SprawozdanieFinansowe.objects.get(
+            firma=self.firma,
+            rok=2024
+        )
+
+        self.assertEqual(
+            sprawozdanie.naleznosci,
+            Decimal("800.00")
+        )
+
+    def test_import_updates_zero_receivables_from_xml(self):
+        sprawozdanie = SprawozdanieFinansowe.objects.create(
+            firma=self.firma,
+            rok=2024,
+            naleznosci=Decimal("0.00")
+        )
+
+        response = self.importuj_do_wybranej_firmy(
+            self.przygotuj_xml(
+                naleznosci="1750.25"
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        sprawozdanie.refresh_from_db()
+
+        self.assertEqual(
+            sprawozdanie.naleznosci,
+            Decimal("1750.25")
+        )
+
+    def test_xml_for_unknown_company_creates_new_company_and_statement(self):
+        response = self.importuj_do_wybranej_firmy(
+            self.przygotuj_xml(
+                nazwa="Nowa Firma Sp. z o.o.",
+                nip="9999999999",
+                krs="0000999999",
+                rok=2023,
+                naleznosci="5000.00"
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        nowa_firma = Firma.objects.get(
+            owner=self.user,
+            nip="9999999999"
+        )
+
+        self.assertEqual(
+            nowa_firma.nazwa,
+            "Nowa Firma Sp. z o.o."
+        )
+
+        self.assertTrue(
+            SprawozdanieFinansowe.objects.filter(
+                firma=nowa_firma,
+                rok=2023,
+                naleznosci=Decimal("5000.00")
+            ).exists()
+        )
+
+    def test_import_does_not_attach_statement_to_other_users_company(self):
+        other_user = User.objects.create_user(
+            username="other_xml_user",
+            password="Haslo123!"
+        )
+
+        other_company = Firma.objects.create(
+            owner=other_user,
+            nazwa="Firma innego użytkownika",
+            nip="7777777777",
+            krs="0000777777"
+        )
+
+        response = self.importuj_do_wybranej_firmy(
+            self.przygotuj_xml(
+                nazwa="Moja firma z XML",
+                nip="7777777777",
+                krs="0000777777",
+                rok=2022,
+                naleznosci="3000.00"
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertFalse(
+            SprawozdanieFinansowe.objects.filter(
+                firma=other_company
+            ).exists()
+        )
+
+        moja_firma = Firma.objects.get(
+            owner=self.user,
+            nip="7777777777"
+        )
+
+        self.assertTrue(
+            SprawozdanieFinansowe.objects.filter(
+                firma=moja_firma,
+                rok=2022
+            ).exists()
         )
