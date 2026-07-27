@@ -20,7 +20,6 @@ from .tasks import wyslij_mailing_task
 
 from drf_spectacular.utils import extend_schema
 
-from .tasks import wyslij_mailing_task
 
 
 
@@ -445,24 +444,6 @@ def importuj_xml(request, firma_id):
                         krs=krs_z_xml
                     ).first()
                     
-                print("=" * 50)
-                print("DEBUG IMPORT Z TABELI")
-                print("Plik:", plik_xml.name)
-                print("Rok:", rok_z_xml)
-                print("Należności:", naleznosci_z_xml)
-                print("=" * 50)
-
-                print()
-                print("=" * 60)
-                print("DEBUG")
-                print("Plik:", plik_xml.name)
-                print("Rok:", rok_z_xml)
-                print("Należności odczytane:", naleznosci_z_xml)
-                print("=" * 60)
-                print()
-
-
-
                 if firma_z_xml:
                     status_firmy_w_bazie = (
                         f"Firma z XML istnieje już w bazie: {firma_z_xml.nazwa}."
@@ -853,4 +834,3 @@ def edytuj_profil_firmy(request, firma_id):
             "form": form,
         },
     )
-        
