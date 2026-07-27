@@ -349,6 +349,68 @@ def przywroc_sprawozdanie(request, sprawozdanie_id):
     return redirect("archiwum_sprawozdan")
 
 
+def odczytaj_dane_z_xml(zawartosc_xml):
+    dane = {
+        "nazwa": "",
+        "nip": "",
+        "krs": "",
+        "rok": "",
+        "naleznosci": Decimal("0"),
+    }
+
+    root = ET.fromstring(zawartosc_xml)
+
+    for element in root.iter():
+        tag = element.tag.split("}")[-1]
+
+        if tag == "NazwaFirmy" and element.text:
+            dane["nazwa"] = element.text.strip()
+
+        if tag == "P_1D" and element.text:
+            dane["nip"] = element.text.strip()
+
+        if tag == "P_1E" and element.text:
+            dane["krs"] = element.text.strip()
+
+        if tag == "OkresDo" and element.text:
+            dane["rok"] = element.text.strip()[:4]
+
+        if (
+            "Naleznosci" in tag
+            or "Należności" in tag
+            or "Naleznosc" in tag
+            or "Należność" in tag
+        ) and element.text:
+            try:
+                dane["naleznosci"] = Decimal(
+                    element.text.strip()
+                    .replace(" ", "")
+                    .replace(",", ".")
+                )
+            except InvalidOperation:
+                dane["naleznosci"] = Decimal("0")
+
+        if tag == "Aktywa_B_II":
+            for dziecko in element:
+                tag_dziecka = dziecko.tag.split("}")[-1]
+
+                if tag_dziecka == "KwotaA" and dziecko.text:
+                    try:
+                        dane["naleznosci"] = Decimal(
+                            dziecko.text.strip()
+                            .replace(" ", "")
+                            .replace(",", ".")
+                        )
+
+                        if "WTysiacach" in zawartosc_xml:
+                            dane["naleznosci"] *= Decimal("1000")
+
+                    except InvalidOperation:
+                        dane["naleznosci"] = Decimal("0")
+
+    return dane
+
+
 @login_required
 def importuj_xml(request, firma_id):
     firma = get_object_or_404(
@@ -375,60 +437,13 @@ def importuj_xml(request, firma_id):
                 czy_xml_pasuje_do_firmy = (
                     firma.nazwa.upper() in zawartosc_xml.upper()
                 )
+                dane_z_xml = odczytaj_dane_z_xml(zawartosc_xml)
 
-                nazwa_z_xml = ""
-                nip_z_xml = ""
-                krs_z_xml = ""
-                rok_z_xml = ""
-                naleznosci_z_xml = Decimal("0")
-
-                root = ET.fromstring(zawartosc_xml)
-
-                for element in root.iter():
-                    tag = element.tag.split("}")[-1]
-
-                    if tag == "NazwaFirmy" and element.text:
-                        nazwa_z_xml = element.text.strip()
-
-                    if tag == "P_1D" and element.text:
-                        nip_z_xml = element.text.strip()
-
-                    if tag == "P_1E" and element.text:
-                        krs_z_xml = element.text.strip()
-
-                    if tag == "OkresDo" and element.text:
-                        rok_z_xml = element.text.strip()[:4]
-                        
-                        
-                    if (
-                        "Naleznosci" in tag
-                        or "Należności" in tag
-                        or "Naleznosc" in tag
-                        or "Należność" in tag
-                    ) and element.text:
-                        try:
-                            naleznosci_z_xml = Decimal(
-                                element.text.strip().replace(" ", "").replace(",", ".")
-                            )
-                        except InvalidOperation:
-                            naleznosci_z_xml = Decimal("0")
-                        
-
-                    if tag == "Aktywa_B_II":
-                        for dziecko in element:
-                            tag_dziecka = dziecko.tag.split("}")[-1]
-
-                            if tag_dziecka == "KwotaA" and dziecko.text:
-                                try:
-                                    naleznosci_z_xml = Decimal(
-                                        dziecko.text.strip().replace(" ", "").replace(",", ".")
-                                    )
-
-                                    if "WTysiacach" in zawartosc_xml:
-                                        naleznosci_z_xml = naleznosci_z_xml * Decimal("1000")
-
-                                except InvalidOperation:
-                                    naleznosci_z_xml = Decimal("0")
+                nazwa_z_xml = dane_z_xml["nazwa"]
+                nip_z_xml = dane_z_xml["nip"]
+                krs_z_xml = dane_z_xml["krs"]
+                rok_z_xml = dane_z_xml["rok"]
+                naleznosci_z_xml = dane_z_xml["naleznosci"]
 
                 firma_z_xml = None
 
