@@ -410,6 +410,23 @@ def odczytaj_dane_z_xml(zawartosc_xml):
 
     return dane
 
+def znajdz_firme_z_xml(user, nip, krs):
+    firma = None
+
+    if nip:
+        firma = Firma.objects.filter(
+            owner=user,
+            nip=nip
+        ).first()
+
+    if not firma and krs:
+        firma = Firma.objects.filter(
+            owner=user,
+            krs=krs
+        ).first()
+
+    return firma
+
 
 @login_required
 def importuj_xml(request, firma_id):
@@ -445,20 +462,11 @@ def importuj_xml(request, firma_id):
                 rok_z_xml = dane_z_xml["rok"]
                 naleznosci_z_xml = dane_z_xml["naleznosci"]
 
-                firma_z_xml = None
-
-                if nip_z_xml:
-                    firma_z_xml = Firma.objects.filter(
-                        owner=request.user,
-                        nip=nip_z_xml
-                    ).first()
-
-                if not firma_z_xml and krs_z_xml:
-                    firma_z_xml = Firma.objects.filter(
-                        owner=request.user,
-                        krs=krs_z_xml
-                    ).first()
-                    
+                firma_z_xml = znajdz_firme_z_xml(
+                    request.user,
+                    nip_z_xml,
+                    krs_z_xml
+                )
                 if firma_z_xml:
                     status_firmy_w_bazie = (
                         f"Firma z XML istnieje już w bazie: {firma_z_xml.nazwa}."
