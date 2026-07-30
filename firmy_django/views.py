@@ -477,6 +477,33 @@ def obsluz_sprawozdanie_istniejacej_firmy(
 
     return status
 
+def utworz_firme_i_sprawozdanie(
+    user,
+    nazwa,
+    nip,
+    krs,
+    rok,
+    naleznosci
+):
+    nowa_firma = Firma.objects.create(
+        owner=user,
+        nazwa=nazwa,
+        nip=nip,
+        krs=krs
+    )
+
+    SprawozdanieFinansowe.objects.create(
+        firma=nowa_firma,
+        rok=int(rok),
+        naleznosci=naleznosci
+    )
+
+    return (
+        "Firma z XML nie istniała jeszcze w bazie."
+        f" Utworzono nową firmę: {nowa_firma.nazwa}."
+        f" Dodano sprawozdanie za rok {rok}."
+    )
+
 @login_required
 def importuj_xml(request, firma_id):
     firma = get_object_or_404(
@@ -526,23 +553,13 @@ def importuj_xml(request, firma_id):
                     )
 
                 else:
-                    nowa_firma = Firma.objects.create(
-                        owner=request.user,
-                        nazwa=nazwa_z_xml or plik_xml.name,
-                        nip=nip_z_xml,
-                        krs=krs_z_xml
-                    )
-
-                    SprawozdanieFinansowe.objects.create(
-                        firma=nowa_firma,
-                        rok=int(rok_z_xml),
-                        naleznosci=naleznosci_z_xml
-                    )
-
-                    status_firmy_w_bazie = (
-                        "Firma z XML nie istniała jeszcze w bazie."
-                        f" Utworzono nową firmę: {nowa_firma.nazwa}."
-                        f" Dodano sprawozdanie za rok {rok_z_xml}."
+                    status_firmy_w_bazie = utworz_firme_i_sprawozdanie(
+                        request.user,
+                        nazwa_z_xml or plik_xml.name,
+                        nip_z_xml,
+                        krs_z_xml,
+                        rok_z_xml,
+                        naleznosci_z_xml
                     )
 
                 katalog_importow = os.path.join(
