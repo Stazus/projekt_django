@@ -504,6 +504,35 @@ def utworz_firme_i_sprawozdanie(
         f" Dodano sprawozdanie za rok {rok}."
     )
 
+def zapisz_plik_xml_na_dysku(firma_id, plik_xml):
+    katalog_importow = os.path.join(
+        "sprawozdania_xml",
+        "importy"
+    )
+
+    os.makedirs(
+        katalog_importow,
+        exist_ok=True
+    )
+
+    nazwa_pliku = f"firma_{firma_id}_{plik_xml.name}"
+
+    sciezka_pliku = os.path.join(
+        katalog_importow,
+        nazwa_pliku
+    )
+
+    plik_xml.seek(0)
+
+    with open(
+        sciezka_pliku,
+        "wb+"
+    ) as destination:
+        for chunk in plik_xml.chunks():
+            destination.write(chunk)
+
+    return sciezka_pliku
+
 @login_required
 def importuj_xml(request, firma_id):
     firma = get_object_or_404(
@@ -562,33 +591,10 @@ def importuj_xml(request, firma_id):
                         naleznosci_z_xml
                     )
 
-                katalog_importow = os.path.join(
-                    "sprawozdania_xml",
-                    "importy"
+                zapisz_plik_xml_na_dysku(
+                    firma.id,
+                    plik_xml
                 )
-
-                os.makedirs(
-                    katalog_importow,
-                    exist_ok=True
-                )
-
-                nazwa_pliku = (
-                    f"firma_{firma.id}_{plik_xml.name}"
-                )
-
-                sciezka_pliku = os.path.join(
-                    katalog_importow,
-                    nazwa_pliku
-                )
-
-                plik_xml.seek(0)
-
-                with open(
-                    sciezka_pliku,
-                    "wb+"
-                ) as destination:
-                    for chunk in plik_xml.chunks():
-                        destination.write(chunk)
 
                 komunikat = (
                     f"Plik {plik_xml.name} został odebrany, "
