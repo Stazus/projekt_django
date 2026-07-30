@@ -427,6 +427,55 @@ def znajdz_firme_z_xml(user, nip, krs):
 
     return firma
 
+def obsluz_sprawozdanie_istniejacej_firmy(
+    firma,
+    rok,
+    naleznosci
+):
+    status = (
+        f"Firma z XML istnieje już w bazie: {firma.nazwa}."
+    )
+
+    sprawozdanie_z_roku = firma.sprawozdania.filter(
+        rok=int(rok)
+    ).first()
+
+    if sprawozdanie_z_roku:
+        if (
+            sprawozdanie_z_roku.naleznosci == 0
+            and naleznosci > 0
+        ):
+            sprawozdanie_z_roku.naleznosci = naleznosci
+            sprawozdanie_z_roku.save()
+
+            status += (
+                f" Sprawozdanie za rok {rok} już istniało w bazie,"
+                f" ale miało należności 0."
+                f" Należności zostały uzupełnione z XML."
+            )
+        else:
+            status += (
+                f" Sprawozdanie za rok {rok} już istnieje w bazie."
+                f" Możliwe, że importowany plik jest korektą"
+                f" istniejącego sprawozdania."
+                f" W przyszłości będzie można zastąpić istniejące"
+                f" sprawozdanie, zachować obie wersje,"
+                f" porównać je albo anulować import."
+            )
+
+    else:
+        SprawozdanieFinansowe.objects.create(
+            firma=firma,
+            rok=int(rok),
+            naleznosci=naleznosci
+        )
+
+        status += (
+            f" Sprawozdanie za rok {rok} nie istniało jeszcze w bazie."
+            f" Zostało dodane jako nowe sprawozdanie tej firmy."
+        )
+
+    return status
 
 @login_required
 def importuj_xml(request, firma_id):
@@ -469,42 +518,12 @@ def importuj_xml(request, firma_id):
                 )
                 if firma_z_xml:
                     status_firmy_w_bazie = (
-                        f"Firma z XML istnieje już w bazie: {firma_z_xml.nazwa}."
+                        obsluz_sprawozdanie_istniejacej_firmy(
+                            firma_z_xml,
+                            rok_z_xml,
+                            naleznosci_z_xml
+                        )
                     )
-
-                    sprawozdanie_z_roku = firma_z_xml.sprawozdania.filter(
-                        rok=int(rok_z_xml)
-                    ).first()
-
-                    if sprawozdanie_z_roku:
-                        if sprawozdanie_z_roku.naleznosci == 0 and naleznosci_z_xml > 0:
-                            sprawozdanie_z_roku.naleznosci = naleznosci_z_xml
-                            sprawozdanie_z_roku.save()
-
-                            status_firmy_w_bazie += (
-                                f" Sprawozdanie za rok {rok_z_xml} już istniało w bazie,"
-                                f" ale miało należności 0."
-                                f" Należności zostały uzupełnione z XML."
-                            )
-                        else:
-                            status_firmy_w_bazie += (
-                                f" Sprawozdanie za rok {rok_z_xml} już istnieje w bazie."
-                                f" Możliwe, że importowany plik jest korektą istniejącego sprawozdania."
-                                f" W przyszłości będzie można zastąpić istniejące sprawozdanie,"
-                                f" zachować obie wersje, porównać je albo anulować import."
-                            )
-
-                    else:
-                        SprawozdanieFinansowe.objects.create(
-                            firma=firma_z_xml,
-                            rok=int(rok_z_xml),
-                            naleznosci=naleznosci_z_xml
-                        )
-
-                        status_firmy_w_bazie += (
-                            f" Sprawozdanie za rok {rok_z_xml} nie istniało jeszcze w bazie."
-                            f" Zostało dodane jako nowe sprawozdanie tej firmy."
-                        )
 
                 else:
                     nowa_firma = Firma.objects.create(
