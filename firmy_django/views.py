@@ -613,19 +613,6 @@ def importuj_xml(request, firma_id):
                     naleznosci_z_xml,
                     status_firmy_w_bazie,
                 )
-                if czy_xml_pasuje_do_firmy:
-                    komunikat += "XML prawdopodobnie dotyczy wybranej firmy. "
-                else:
-                    komunikat += "Uwaga: XML prawdopodobnie nie dotyczy wybranej firmy. "
-
-                komunikat += (
-                    f"Dane z XML: nazwa: {nazwa_z_xml or 'brak'}, "
-                    f"NIP: {nip_z_xml or 'brak'}, "
-                    f"KRS: {krs_z_xml or 'brak'}, "
-                    f"Rok: {rok_z_xml or 'brak'}, "
-                    f"Należności: {naleznosci_z_xml}. "
-                    f"{status_firmy_w_bazie}"
-                )
 
             except ET.ParseError:
                 komunikat = (
