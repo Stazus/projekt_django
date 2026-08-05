@@ -188,6 +188,30 @@
         }
 
 
+
+
+        @media (max-width: 768px) {
+            .filters {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .filters input,
+            .filters select,
+            .filters button,
+            .filters a {
+                width: 100% !important;
+                min-width: 0;
+            }
+
+            .filters a {
+                display: block;
+                padding: 8px;
+                text-align: center;
+            }
+        }
+
     </style>
 </head>
 <body>
