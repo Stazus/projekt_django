@@ -7,6 +7,10 @@
     {% load custom_filters %}
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 30px;
@@ -25,10 +29,19 @@
             margin-top: 0;
         }
 
+        .table-wrapper {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            margin-top: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+
         table {
             border-collapse: collapse;
             width: 100%;
-            margin-top: 20px;
+            min-width: 1250px;
+            margin-top: 0;
         }
 
         th, td {
@@ -113,6 +126,40 @@
         .logout-button {
             padding: 8px 14px;
             cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                margin: 0;
+            }
+
+            .container {
+                width: 100%;
+                max-width: none;
+                padding: 15px;
+                border-radius: 0;
+            }
+
+            .top-bar {
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .filters {
+                align-items: stretch;
+            }
+
+            .filters input,
+            .filters select,
+            .filters button {
+                width: 100% !important;
+                max-width: none;
+            }
+
+            .table-wrapper {
+                margin-left: 0;
+                margin-right: 0;
+            }
         }
     </style>
 </head>
@@ -256,7 +303,8 @@
     <form method="post" action="{% url 'przygotuj_mailing' %}">
         {% csrf_token %}
 
-        <table>
+        <div class="table-wrapper">
+            <table>
             <thead>
                 <tr>
                     <th class="mailing-header">
@@ -412,7 +460,8 @@
                 {% endfor %}
 
             </tbody>
-        </table>
+            </table>
+        </div>
 
         <p class="mailing-button">
             <button type="submit">
