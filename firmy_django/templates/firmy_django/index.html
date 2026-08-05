@@ -373,6 +373,10 @@
     <form method="post" action="{% url 'przygotuj_mailing' %}">
         {% csrf_token %}
 
+        <div class="mobile-table-hint">
+            📱 Przesuń tabelę poziomo, aby zobaczyć pozostałe dane.
+        </div>
+
         <div class="table-wrapper">
             <table>
             <thead>
