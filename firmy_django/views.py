@@ -477,6 +477,40 @@ def utworz_firme_i_sprawozdanie(
         f" Dodano sprawozdanie za rok {rok}."
     )
 
+def zbuduj_komunikat_importu(
+    plik_xml,
+    czy_xml_pasuje_do_firmy,
+    nazwa_z_xml,
+    nip_z_xml,
+    krs_z_xml,
+    rok_z_xml,
+    naleznosci_z_xml,
+    status_firmy_w_bazie,
+):
+    komunikat = (
+        f"Plik {plik_xml.name} został odebrany, "
+        f"poprawnie odczytany jako XML "
+        f"i zapisany na dysku. "
+    )
+
+    if czy_xml_pasuje_do_firmy:
+        komunikat += "XML prawdopodobnie dotyczy wybranej firmy. "
+    else:
+        komunikat += (
+            "Uwaga: XML prawdopodobnie nie dotyczy wybranej firmy. "
+        )
+
+    komunikat += (
+        f"Dane z XML: nazwa: {nazwa_z_xml or 'brak'}, "
+        f"NIP: {nip_z_xml or 'brak'}, "
+        f"KRS: {krs_z_xml or 'brak'}, "
+        f"Rok: {rok_z_xml or 'brak'}, "
+        f"Należności: {naleznosci_z_xml}. "
+        f"{status_firmy_w_bazie}"
+    )
+
+    return komunikat
+
 def zapisz_plik_xml_na_dysku(firma_id, plik_xml):
     katalog_importow = os.path.join(
         "sprawozdania_xml",
@@ -569,12 +603,16 @@ def importuj_xml(request, firma_id):
                     plik_xml
                 )
 
-                komunikat = (
-                    f"Plik {plik_xml.name} został odebrany, "
-                    f"poprawnie odczytany jako XML "
-                    f"i zapisany na dysku. "
+                komunikat = zbuduj_komunikat_importu(
+                    plik_xml,
+                    czy_xml_pasuje_do_firmy,
+                    nazwa_z_xml,
+                    nip_z_xml,
+                    krs_z_xml,
+                    rok_z_xml,
+                    naleznosci_z_xml,
+                    status_firmy_w_bazie,
                 )
-
                 if czy_xml_pasuje_do_firmy:
                     komunikat += "XML prawdopodobnie dotyczy wybranej firmy. "
                 else:
