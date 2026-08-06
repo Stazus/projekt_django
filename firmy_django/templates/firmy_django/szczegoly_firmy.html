@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>{{ firma.nazwa }}</title>
 
@@ -114,6 +115,86 @@
                 border-radius: 10px;
                 margin-bottom: 24px;
             }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-wrapper table {
+            min-width: 760px;
+        }
+
+        .mobile-table-hint {
+            display: none;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                margin: 0;
+            }
+
+            .container {
+                width: 100%;
+                min-height: 100vh;
+                padding: 16px;
+                border-radius: 0;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+                overflow-wrap: anywhere;
+            }
+
+            h2 {
+                font-size: 1.25rem;
+            }
+
+            .company-info p {
+                margin: 8px 0;
+                overflow-wrap: anywhere;
+            }
+
+            .section-box {
+                margin: 16px 0;
+                padding: 12px;
+            }
+
+            .section-box ul {
+                padding-left: 20px;
+            }
+
+            .profil-firmy-zawartosc {
+                gap: 14px;
+            }
+
+            .profil-informacje,
+            .profil-informacje a {
+                overflow-wrap: anywhere;
+            }
+
+            .mobile-table-hint {
+                display: block;
+                margin: 10px 0;
+                padding: 8px 12px;
+                background: #eef6ff;
+                border: 1px solid #b7d7ff;
+                border-radius: 6px;
+                font-size: 14px;
+            }
+
+            .delete-link {
+                display: inline-block;
+                margin: 8px 0;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -250,6 +331,11 @@
 
         <h2>Sprawozdania finansowe</h2>
 
+        <div class="mobile-table-hint">
+            ↔️ Przesuń tabelę poziomo, aby zobaczyć wszystkie kolumny.
+        </div>
+
+        <div class="table-wrapper">
         <table>
             <thead>
                 <tr>
@@ -278,6 +364,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
     </div>
 </body>
 </html>
