@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edytuj profil firmy</title>
 
     <style>
@@ -37,6 +38,78 @@
             color: #1565c0;
             font-weight: bold;
         }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+        h1 {
+            overflow-wrap: anywhere;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        select,
+        input[type="file"] {
+            width: 100%;
+            max-width: 100%;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            font: inherit;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            background: white;
+        }
+
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        button {
+            border: 0;
+            border-radius: 5px;
+            background: #198754;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .errorlist {
+            color: #b00020;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                margin: 0;
+            }
+
+            .container {
+                width: 100%;
+                min-height: 100vh;
+                padding: 18px;
+                border-radius: 0;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            button {
+                width: 100%;
+                padding: 12px;
+            }
+        }
+
     </style>
 </head>
 
