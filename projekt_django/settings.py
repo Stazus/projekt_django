@@ -216,6 +216,9 @@ CELERY_RESULT_BACKEND = REDIS_URL
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Informacja o HTTPS przekazywana przez reverse proxy, np. Railway
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # Bezpieczeństwo produkcyjne
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
