@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Przygotuj mailing</title>
 
     <style>
@@ -68,6 +69,92 @@
             margin-top: 15px;
             margin-bottom: 20px;
         }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+        h1,
+        h2 {
+            overflow-wrap: anywhere;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-wrapper table {
+            min-width: 600px;
+        }
+
+        .mobile-table-hint {
+            display: none;
+        }
+
+        .message-box {
+            overflow-wrap: anywhere;
+        }
+
+        button {
+            border: 0;
+            border-radius: 5px;
+            background: #198754;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                margin: 0;
+            }
+
+            .container {
+                width: 100%;
+                min-height: 100vh;
+                padding: 18px;
+                border-radius: 0;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            h2 {
+                font-size: 1.2rem;
+            }
+
+            input,
+            textarea,
+            button {
+                font-size: 16px;
+            }
+
+            button {
+                width: 100%;
+                padding: 12px;
+            }
+
+            .mobile-table-hint {
+                display: block;
+                margin: 10px 0;
+                padding: 8px 12px;
+                background: #eef6ff;
+                border: 1px solid #b7d7ff;
+                border-radius: 6px;
+                font-size: 14px;
+            }
+
+            .summary,
+            .success,
+            .message-box {
+                overflow-wrap: anywhere;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -86,6 +173,11 @@
 
     <h2>Odbiorcy z bazy</h2>
 
+    <div class="mobile-table-hint">
+        ↔️ Przesuń tabelę poziomo, aby zobaczyć wszystkie kolumny.
+    </div>
+
+    <div class="table-wrapper">
     <table>
         <thead>
             <tr>
@@ -110,6 +202,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 
     <form method="post" action="{% url 'przygotuj_mailing' %}">
         {% csrf_token %}
