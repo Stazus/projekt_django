@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Szczegóły mailingu</title>
 
     <style>
@@ -44,6 +45,48 @@
         .muted {
             color: #666;
         }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .box,
+        .summary {
+            overflow-wrap: anywhere;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                margin: 0;
+            }
+
+            .container {
+                width: 100%;
+                min-height: 100vh;
+                padding: 18px;
+                border-radius: 0;
+            }
+
+            h1 {
+                font-size: 1.7rem;
+            }
+
+            h2 {
+                font-size: 1.25rem;
+            }
+
+            .back-link {
+                display: block;
+                width: 100%;
+                padding: 10px;
+                text-align: center;
+                background: #6c757d;
+                color: white;
+                border-radius: 6px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -51,7 +94,7 @@
 <div class="container">
 
     <p>
-        <a href="{% url 'historia_mailingow' %}">← Wróć do historii mailingów</a>
+        <a href="{% url 'historia_mailingow' %}" class="back-link">← Wróć do historii mailingów</a>
     </p>
 
     <h1>Szczegóły mailingu</h1>

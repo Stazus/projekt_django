@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Historia mailingów</title>
 
     <style>
@@ -63,6 +64,67 @@
         .nowrap {
             white-space: nowrap;
         }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-wrapper table {
+            min-width: 1000px;
+        }
+
+        .mobile-table-hint {
+            display: none;
+        }
+
+        .message {
+            overflow-wrap: anywhere;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                margin: 0;
+            }
+
+            .container {
+                width: 100%;
+                min-height: 100vh;
+                padding: 18px;
+                border-radius: 0;
+            }
+
+            h1 {
+                font-size: 1.7rem;
+            }
+
+            .mobile-table-hint {
+                display: block;
+                margin: 12px 0;
+                padding: 10px;
+                background: #eef6ff;
+                border: 1px solid #b7d7ff;
+                border-radius: 6px;
+                font-size: 14px;
+            }
+
+            .back-link {
+                display: block;
+                width: 100%;
+                padding: 10px;
+                text-align: center;
+                background: #6c757d;
+                color: white;
+                border-radius: 6px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -70,7 +132,7 @@
 <div class="container">
 
     <p>
-        <a href="{% url 'home' %}">← Wróć do listy firm</a>
+        <a href="{% url 'home' %}" class="back-link">← Wróć do listy firm</a>
     </p>
 
     <h1>Historia mailingów</h1>
@@ -79,6 +141,11 @@
         Lista wysłanych mailingów zapisanych w systemie.
     </p>
 
+    <div class="mobile-table-hint">
+        ↔️ Przesuń tabelę poziomo, aby zobaczyć wszystkie kolumny.
+    </div>
+
+    <div class="table-wrapper">
     <table>
         <thead>
             <tr>
@@ -136,6 +203,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 
 </div>
 
