@@ -218,7 +218,7 @@
             }
         }
 
-    
+
 
         .mobile-table-hint {
             display: none;
@@ -234,6 +234,19 @@
                 border-radius: 6px;
                 font-size: 14px;
             }
+        }
+
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
         }
 
     </style>
@@ -313,7 +326,7 @@
     <a href="{% url 'archiwum_sprawozdan' %}"
     style="display:inline-block; padding:10px 15px; background:#6c757d; color:white; text-decoration:none; border-radius:6px; margin-left:10px;">
         Archiwum sprawozdań
-    </a>   
+    </a>
 
 </div>
 
@@ -384,28 +397,32 @@
 
         <div class="table-wrapper">
             <table>
+                <caption class="sr-only">
+                    Lista firm wraz z danymi kontaktowymi, identyfikacyjnymi i sprawozdaniami finansowymi.
+                </caption>
             <thead>
                 <tr>
-                    <th class="mailing-header">
+                    <th class="mailing-header" scope="col">
                         <input
                             type="checkbox"
                             id="zaznacz-wszystkie"
+                            aria-label="Zaznacz wszystkie firmy do mailingu"
                             checked
                             onclick="przelaczWszystkieFirmy(this)"
                         >
                         Mailing
                     </th>
-                    <th>Nazwa</th>
-                    <th>NIP</th>
-                    <th>Email</th>
-                    <th>Źródło</th>
-                    <th>Status</th>
-                    <th>REGON</th>
-                    <th>KRS</th>
-                    <th>Miasto</th>  
-                    <th>Sprawozdanie XML</th>
-                    <th>Sprawozdania finansowe</th>
-                    <th>Liczba sprawozdań</th>
+                    <th scope="col">Nazwa</th>
+                    <th scope="col">NIP</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Źródło</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">REGON</th>
+                    <th scope="col">KRS</th>
+                    <th scope="col">Miasto</th>
+                    <th scope="col">Sprawozdanie XML</th>
+                    <th scope="col">Sprawozdania finansowe</th>
+                    <th scope="col">Liczba sprawozdań</th>
                 </tr>
             </thead>
 
@@ -420,6 +437,7 @@
                                 type="checkbox"
                                 name="firmy"
                                 value="{{ firma.id }}"
+                                aria-label="Zaznacz firmę {{ firma.nazwa }} do mailingu"
                                 checked
                             >
                         {% else %}
@@ -477,7 +495,7 @@
                     <td>{{ firma.krs|default:"-" }}</td>
                     <td>{{ firma.miasto|default:"-" }}</td>
 
-        
+
                     <td>
 
                         <a href="https://rdf-przegladarka.ms.gov.pl/wyszukaj-podmiot"
@@ -528,7 +546,7 @@
 
                     <td>{{ firma.liczba_aktywnych_sprawozdan }}</td>
 
-                    
+
                 </tr>
                 {% empty %}
                 <tr>
