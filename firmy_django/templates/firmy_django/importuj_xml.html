@@ -2,33 +2,148 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Import XML</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #f7f7f7;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 25px;
+            background: #fff;
+            border-radius: 8px;
+        }
+
+        h1 {
+            margin-top: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .company-name,
+        .message {
+            overflow-wrap: anywhere;
+        }
+
+        .message {
+            margin: 18px 0;
+            padding: 14px;
+            background: #eef6ff;
+            border: 1px solid #b7d7ff;
+            border-radius: 6px;
+            line-height: 1.5;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            max-width: 100%;
+            padding: 10px;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            background: #fff;
+            font: inherit;
+        }
+
+        button {
+            margin-top: 18px;
+            padding: 11px 18px;
+            border: 0;
+            border-radius: 5px;
+            background: #0d6efd;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #1565c0;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 0;
+            }
+
+            .container {
+                min-height: 100vh;
+                padding: 18px;
+                border-radius: 0;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            button {
+                width: 100%;
+                padding: 12px;
+            }
+
+            .back-link {
+                display: block;
+                width: 100%;
+                text-align: center;
+                padding: 10px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Import sprawozdania XML</h1>
+    <main class="container">
+        <h1>Import sprawozdania XML</h1>
 
         {% if komunikat %}
-            <p><strong>{{ komunikat }}</strong></p>
+            <div class="message">
+                <strong>{{ komunikat }}</strong>
+            </div>
         {% endif %}
 
+        <p class="company-name">
+            Firma: <strong>{{ firma.nazwa }}</strong>
+        </p>
 
-    <p>
-        Firma: <strong>{{ firma.nazwa }}</strong>
-    </p>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
 
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
+            <label for="plik_xml">Wybierz plik XML:</label>
+            <input
+                type="file"
+                id="plik_xml"
+                name="plik_xml"
+                accept=".xml"
+            >
 
-        <label for="plik_xml">Wybierz plik XML:</label>
-        <input type="file" id="plik_xml" name="plik_xml" accept=".xml">
+            <button type="submit">
+                Importuj XML
+            </button>
+        </form>
 
-        <button type="submit">
-            Importuj XML
-        </button>
-    </form>
-
-    <p>
-        <a href="{% url 'home' %}">Powrót do listy firm</a>
-    </p>
+        <a href="{% url 'home' %}" class="back-link">
+            ← Powrót do listy firm
+        </a>
+    </main>
 </body>
 </html>
