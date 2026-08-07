@@ -775,6 +775,7 @@ Endpoint wymaga uwierzytelnienia JWT lub sesji Django.
 
 
 class FirmaViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Firma.objects.none()
     serializer_class = FirmaSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]
@@ -803,6 +804,7 @@ Endpoint wymaga uwierzytelnienia JWT lub sesji Django.
 
 
 class SprawozdanieFinansoweViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = SprawozdanieFinansowe.objects.none()
     serializer_class = SprawozdanieFinansoweSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]
