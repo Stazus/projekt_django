@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rejestracja</title>
 
     <style>
@@ -47,6 +48,68 @@
         a {
             text-decoration: none;
         }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+        h1 {
+            overflow-wrap: anywhere;
+        }
+
+        button {
+            border: 0;
+            border-radius: 5px;
+            background: #0d6efd;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .errorlist,
+        .error,
+        .helptext {
+            overflow-wrap: anywhere;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                margin: 0;
+            }
+
+            .container {
+                width: 100%;
+                min-height: 100vh;
+                max-width: none;
+                padding: 18px;
+                border-radius: 0;
+            }
+
+            h1 {
+                font-size: 1.7rem;
+            }
+
+            input,
+            button {
+                font-size: 16px;
+            }
+
+            button {
+                width: 100%;
+                padding: 12px;
+            }
+
+            .back-link {
+                display: block;
+                width: 100%;
+                padding: 10px;
+                text-align: center;
+                background: #e9ecef;
+                border-radius: 6px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -54,7 +117,7 @@
 <div class="container">
 
     <p>
-        <a href="{% url 'home' %}">← Wróć do strony głównej</a>
+        <a href="{% url 'home' %}" class="back-link">← Wróć do strony głównej</a>
     </p>
 
     <h1>Rejestracja użytkownika</h1>
