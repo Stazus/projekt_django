@@ -18,12 +18,17 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY",
-    "django-insecure-!q8ar$4n1y+=$v$t6#%65%f^3tb8dng^mpss-4hu6lt(z@dmui"
-)
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 DEBUG = os.environ.get("DEBUG", "True") == "True"
+
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "django-insecure-development-only-key"
+    else:
+        raise RuntimeError(
+            "SECRET_KEY musi być ustawiony w zmiennych środowiskowych."
+        )
 
 ALLOWED_HOSTS = os.environ.get(
     "ALLOWED_HOSTS",
@@ -210,3 +215,12 @@ CELERY_RESULT_BACKEND = REDIS_URL
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# Bezpieczeństwo produkcyjne
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
