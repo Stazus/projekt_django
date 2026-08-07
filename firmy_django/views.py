@@ -67,7 +67,7 @@ def index(request):
     elif sort == "reports_desc":
         firmy = sorted(
             firmy,
-            key=lambda f: f.sprawozdania.filter(zarchiwizowane=False).count(),
+            key=lambda f: f.sprawozdania.filter(czy_zarchiwizowane=False).count(),
             reverse=True
         )
     elif sort == "naleznosci_desc":
