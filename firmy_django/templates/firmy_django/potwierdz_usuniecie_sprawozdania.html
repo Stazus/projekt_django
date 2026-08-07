@@ -2,49 +2,145 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Usuń sprawozdanie</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background: #f7f7f7;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            margin: 0 auto;
+            padding: 25px;
+            background: #fff;
+            border-radius: 8px;
+        }
+
+        h1 {
+            margin-top: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .warning {
+            padding: 14px;
+            background: #fff3f3;
+            border: 1px solid #f0b8b8;
+            border-radius: 6px;
+            line-height: 1.5;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button,
+        .cancel-link {
+            display: inline-block;
+            padding: 11px 18px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        button {
+            border: 0;
+            background: #b00020;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .cancel-link {
+            background: #e9ecef;
+            color: #1565c0;
+        }
+
+        .home-link {
+            display: inline-block;
+            margin-top: 18px;
+            color: #1565c0;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 0;
+            }
+
+            .container {
+                min-height: 100vh;
+                padding: 18px;
+                border-radius: 0;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            button,
+            .cancel-link {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
+
 <body>
+    <main class="container">
+        <h1>Usuń sprawozdanie finansowe</h1>
 
-    <h1>Usuń sprawozdanie finansowe</h1>
+        <div class="warning">
+            <p>Czy na pewno chcesz usunąć sprawozdanie?</p>
 
-    <p>
-        Czy na pewno chcesz usunąć sprawozdanie?
-    </p>
+            <p>
+                <strong>Firma:</strong>
+                {{ sprawozdanie.firma.nazwa }}
+            </p>
 
-    <p>
-        <strong>Firma:</strong>
-        {{ sprawozdanie.firma.nazwa }}
-    </p>
+            <p>
+                <strong>Rok:</strong>
+                {{ sprawozdanie.rok }}
+            </p>
 
-    <p>
-        <strong>Rok:</strong>
-        {{ sprawozdanie.rok }}
-    </p>
+            <p>
+                <strong>Należności:</strong>
+                {{ sprawozdanie.naleznosci }} zł
+            </p>
+        </div>
 
-    <p>
-        <strong>Należności:</strong>
-        {{ sprawozdanie.naleznosci }} zł
-    </p>
+        <div class="actions">
+            <form method="post">
+                {% csrf_token %}
 
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit">
-            TAK, usuń sprawozdanie
-        </button>
-    </form>
+                <button type="submit">
+                    Tak, usuń sprawozdanie
+                </button>
+            </form>
 
-    <p>
-        <a href="{% url 'szczegoly_firmy' sprawozdanie.firma.id %}">
-            Anuluj i wróć do firmy
+            <a href="{% url 'szczegoly_firmy' sprawozdanie.firma.id %}"
+               class="cancel-link">
+                Anuluj i wróć do firmy
+            </a>
+        </div>
+
+        <a href="{% url 'home' %}" class="home-link">
+            ← Powrót do listy firm
         </a>
-    </p>
-
-    <p>
-        <a href="{% url 'home' %}">
-            Powrót do listy firm
-        </a>
-    </p>
-
+    </main>
 </body>
 </html>
