@@ -35,3 +35,6 @@ Thumbs.db
 # Django uploaded media
 media/
 profile_firm/
+
+# Windows metadata
+*:Zone.Identifier*
