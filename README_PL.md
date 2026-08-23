@@ -177,6 +177,79 @@ Najważniejszym założeniem projektu jest pełna izolacja danych użytkowników
 
 ---
 
+## Diagram ERD
+
+Poniższy diagram przedstawia najważniejsze modele aplikacji oraz relacje między nimi.
+
+```mermaid
+erDiagram
+    USER o|--o{ FIRMA : "jest właścicielem"
+    USER o|--o{ MAILING : "jest właścicielem"
+
+    FIRMA ||--o{ SPRAWOZDANIE_FINANSOWE : "posiada"
+    FIRMA ||--o| PROFIL_FIRMY : "może mieć profil"
+    FIRMA }o--o{ BRANZA : "należy do"
+    MAILING }o--o{ FIRMA : "obejmuje odbiorców"
+
+    USER {
+        int id
+        string username
+        string email
+    }
+
+    FIRMA {
+        int id
+        int owner_id
+        string nazwa
+        string nip
+        string regon
+        string krs
+        string miasto
+        string email
+        string strona_www
+        string telefon
+        string email_zrodlo
+        string email_zrodlo_opis
+    }
+
+    BRANZA {
+        int id
+        string nazwa
+    }
+
+    SPRAWOZDANIE_FINANSOWE {
+        int id
+        int firma_id
+        int rok
+        decimal naleznosci
+        decimal aktywa
+        decimal przychody
+        decimal zysk_netto
+        string plik_xml
+        boolean czy_zarchiwizowane
+    }
+
+    MAILING {
+        int id
+        int owner_id
+        string temat
+        text tresc
+        text odbiorcy_zewnetrzni
+        datetime data_wyslania
+    }
+
+    PROFIL_FIRMY {
+        int id
+        int firma_id
+        text opis
+        string logo
+        string banner
+        string telefon
+        string strona_www
+    }
+```
+---
+
 # Import sprawozdań finansowych XML
 
 Jedną z najważniejszych funkcjonalności aplikacji jest import sprawozdań finansowych zapisanych w formacie XML pochodzących z systemu PRS/KRS.

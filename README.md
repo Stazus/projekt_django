@@ -177,6 +177,78 @@ One of the core assumptions of the project is full isolation of user data. Each 
 >
 > A well-designed database structure provides a solid foundation for the entire application and allows new features to be added without rebuilding existing models.
 
+## ERD Diagram
+
+The following diagram presents the main application models and the relationships between them.
+
+```mermaid
+erDiagram
+    USER o|--o{ COMPANY : "owns"
+    USER o|--o{ MAILING : "owns"
+
+    COMPANY ||--o{ FINANCIAL_STATEMENT : "has"
+    COMPANY ||--o| COMPANY_PROFILE : "may have profile"
+    COMPANY }o--o{ INDUSTRY : "belongs to"
+    MAILING }o--o{ COMPANY : "includes recipients"
+
+    USER {
+        int id
+        string username
+        string email
+    }
+
+    COMPANY {
+        int id
+        int owner_id
+        string name
+        string nip
+        string regon
+        string krs
+        string city
+        string email
+        string website
+        string phone
+        string email_source
+        string email_source_description
+    }
+
+    INDUSTRY {
+        int id
+        string name
+    }
+
+    FINANCIAL_STATEMENT {
+        int id
+        int company_id
+        int year
+        decimal receivables
+        decimal assets
+        decimal revenue
+        decimal net_profit
+        string xml_file
+        boolean archived
+    }
+
+    MAILING {
+        int id
+        int owner_id
+        string subject
+        text body
+        text external_recipients
+        datetime sent_at
+    }
+
+    COMPANY_PROFILE {
+        int id
+        int company_id
+        text description
+        string logo
+        string banner
+        string phone
+        string website
+    }
+```
+
 ---
 
 # XML Financial Statement Import
