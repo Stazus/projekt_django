@@ -25,6 +25,7 @@ Projekt został zaprojektowany jako fundament do dalszego rozwoju. W kolejnych e
 - [Najważniejsze funkcjonalności](#najważniejsze-funkcjonalności)
 - [Architektura aplikacji](#architektura-aplikacji)
 - [Model danych](#model-danych)
+- [Diagram ERD](#diagram-erd)
 - [Import sprawozdań finansowych XML](#import-sprawozdań-finansowych-xml)
 - [Bezpieczeństwo i izolacja danych użytkowników](#bezpieczeństwo-i-izolacja-danych-użytkowników)
 - [REST API](#rest-api)

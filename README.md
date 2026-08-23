@@ -27,6 +27,7 @@ The application was designed as a foundation for long-term development. Future s
 - [Key Features](#key-features)
 - [Application Architecture](#application-architecture)
 - [Data Model](#data-model)
+- [ERD Diagram](#erd-diagram)
 - [XML Financial Statement Import](#xml-financial-statement-import)
 - [Security and User Data Isolation](#security-and-user-data-isolation)
 - [REST API](#rest-api)
